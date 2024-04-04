@@ -1,0 +1,13 @@
+version: '3.6'
+
+services:
+  mamkin-investor-api:
+    image: chipseky/mamkin-investor:0.0.1
+    environment:
+      - Bybit__ApiKey=${BYBIT_API_KEY:-xxx}
+      - Bybit__ApiSecret=${BYBIT_API_SECRET:-xxx}
+      - Telegram__BotAccessToken=${TG_BOT_ACCESS_TOKEN:-xxx}
+      - Telegram__GroupChatId=${TG_BOT_GROUP_CHAT_ID:-xxx}
+    ports:
+      - 5555:8080
+    restart: always

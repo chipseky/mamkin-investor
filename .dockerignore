@@ -1,0 +1,13 @@
+.env
+.git*
+.docker*
+Docker*
+docker*
+charts*
+.vs
+.vscode
+**/bin
+**/obj
+*.DotSettings
+**/.toolstarget
+.editorconfig

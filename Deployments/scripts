@@ -1,0 +1,5 @@
+docker build -t mamkin-investor .
+
+docker tag mamkin-investor chipseky/mamkin-investor:0.0.1
+
+docker push chipseky/mamkin-investor:0.0.1
