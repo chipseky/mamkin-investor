@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chipseky.MamkinInvestor.WebApi", "Chipseky.MamkinInvestor.WebApi\Chipseky.MamkinInvestor.WebApi.csproj", "{D6F157FB-CAC3-45EC-BF42-8432189E7D50}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chipseky.MamkinInvestor.Domain", "Chipseky.MamkinInvestor.Domain\Chipseky.MamkinInvestor.Domain.csproj", "{93BE5E75-0121-4F37-B86E-BB6CB66C8527}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chipseky.MamkinInvestor.Tests", "Chipseky.MamkinInvestor.Tests\Chipseky.MamkinInvestor.Tests.csproj", "{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{D6F157FB-CAC3-45EC-BF42-8432189E7D50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6F157FB-CAC3-45EC-BF42-8432189E7D50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6F157FB-CAC3-45EC-BF42-8432189E7D50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93BE5E75-0121-4F37-B86E-BB6CB66C8527}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93BE5E75-0121-4F37-B86E-BB6CB66C8527}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93BE5E75-0121-4F37-B86E-BB6CB66C8527}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93BE5E75-0121-4F37-B86E-BB6CB66C8527}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

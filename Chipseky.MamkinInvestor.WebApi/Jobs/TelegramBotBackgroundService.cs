@@ -1,3 +1,4 @@
+using Chipseky.MamkinInvestor.WebApi.Extensions;
 using Chipseky.MamkinInvestor.WebApi.Options;
 using Chipseky.MamkinInvestor.WebApi.Services;
 using Microsoft.Extensions.Options;
@@ -14,10 +15,12 @@ public class TelegramBotBackgroundService : BackgroundService
     private readonly string _tgBotAccessToken;
     private readonly long _chatId;
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ILogger<TelegramBotBackgroundService> _logger;
 
-    public TelegramBotBackgroundService(IServiceScopeFactory serviceScopeFactory, IOptions<TelegramSettings> options)
+    public TelegramBotBackgroundService(IServiceScopeFactory serviceScopeFactory, IOptions<TelegramSettings> options, ILogger<TelegramBotBackgroundService> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
+        _logger = logger;
         _tgBotAccessToken = options.Value.BotAccessToken;
         _chatId = options.Value.GroupChatId;
     }
@@ -34,7 +37,7 @@ public class TelegramBotBackgroundService : BackgroundService
         botClient.StartReceiving(UpdateHandler, ErrorHandler, receiverOptions, stoppingToken); // Запускаем бота
         
         var mamkinInvestorBot = await botClient.GetMeAsync(stoppingToken); // Создаем переменную, в которую помещаем информацию о нашем боте.
-        Console.WriteLine($"Бот {mamkinInvestorBot.FirstName} запущен!");
+        _logger.LogInformation($"Бот {mamkinInvestorBot.FirstName} запущен!");
         
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
@@ -58,8 +61,10 @@ public class TelegramBotBackgroundService : BackgroundService
                     var hotDerivationService =
                         scope.ServiceProvider.GetRequiredService<HotDerivationService>();
 
+                    var top10TradingPairs = await hotDerivationService.GetTop10TradingPairs();
+                    
                     var messageText = message.Text is "делай" or "покажи"
-                        ? await hotDerivationService.GetAsString()
+                        ? top10TradingPairs.GetAsString()
                         : "мы вас усшылали";
                     
                     await botClient.SendTextMessageAsync(
@@ -76,7 +81,7 @@ public class TelegramBotBackgroundService : BackgroundService
             Console.WriteLine(ex.ToString());
         }
     }
-    
+
     private static Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
     {
         var errorMessage = error switch

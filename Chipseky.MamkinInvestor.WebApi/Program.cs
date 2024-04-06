@@ -1,3 +1,4 @@
+using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.WebApi.Extensions;
 using Chipseky.MamkinInvestor.WebApi.Jobs;
 using Chipseky.MamkinInvestor.WebApi.Options;
@@ -17,6 +18,9 @@ builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("T
 builder.Services.Configure<BybitSettings>(builder.Configuration.GetSection("Bybit"));
 
 builder.Services.AddScoped<HotDerivationService>();
+builder.Services.AddSingleton<IOrdersApi, OrdersApi>();
+builder.Services.AddSingleton<OrdersManager>();
+builder.Services.AddSingleton<Trader>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();
 builder.Services.AddHostedService<HotDerivationBackgroundService>();
 

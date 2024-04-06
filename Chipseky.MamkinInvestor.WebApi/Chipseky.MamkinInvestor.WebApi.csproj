@@ -19,4 +19,8 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Chipseky.MamkinInvestor.Domain\Chipseky.MamkinInvestor.Domain.csproj" />
+    </ItemGroup>
+
 </Project>

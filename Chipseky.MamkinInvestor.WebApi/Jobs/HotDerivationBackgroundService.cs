@@ -1,3 +1,5 @@
+using Chipseky.MamkinInvestor.Domain;
+using Chipseky.MamkinInvestor.WebApi.Extensions;
 using Chipseky.MamkinInvestor.WebApi.Options;
 using Chipseky.MamkinInvestor.WebApi.Services;
 using Microsoft.Extensions.Options;
@@ -29,13 +31,18 @@ public class HotDerivationBackgroundService : BackgroundService
                 var hotDerivationService =
                     scope.ServiceProvider.GetRequiredService<HotDerivationService>();
                 
-                var message = await hotDerivationService.GetAsString();
+                var trader =
+                    scope.ServiceProvider.GetRequiredService<Trader>();
+                
+                var top10TradingPairs = await hotDerivationService.GetTop10TradingPairs();
 
+                await trader.Trade(top10TradingPairs);
+                
                 var botClient = new TelegramBotClient(_tgBotAccessToken);
                 
                 await botClient.SendTextMessageAsync(
                     _chatId,
-                    message,
+                    top10TradingPairs.GetAsString(),
                     cancellationToken: stoppingToken
                 );
             }
@@ -43,7 +50,8 @@ public class HotDerivationBackgroundService : BackgroundService
             {
                 Console.WriteLine(ex);
             }
-            await Task.Delay(300000, stoppingToken);
+            
+            await Task.Delay(20000, stoppingToken);
         }
         // ReSharper disable once FunctionNeverReturns
     }
