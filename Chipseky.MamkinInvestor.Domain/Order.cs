@@ -2,6 +2,7 @@ namespace Chipseky.MamkinInvestor.Domain;
 
 public class Order
 {
+    public Guid OrderId { get; set; }
     public DateTime CreatedAt { get; private set; }
     public decimal CoinsAmount { get; private set; }
     public string TradingPair { get; private set; }

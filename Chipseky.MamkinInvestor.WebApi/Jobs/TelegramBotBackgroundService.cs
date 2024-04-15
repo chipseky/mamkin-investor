@@ -27,19 +27,45 @@ public class TelegramBotBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var botClient = new TelegramBotClient(_tgBotAccessToken);
+        while (true)
+        {
+            try
+            {
+                await StartReceiving(stoppingToken);
+            
+                await Task.Delay(Timeout.Infinite, stoppingToken); // https://stackoverflow.com/a/73735099
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "error in TelegramBotBackgroundService bleat'");
+            }
+        }
+        // ReSharper disable once FunctionNeverReturns
+    }
+
+    private async Task StartReceiving(CancellationToken cancellationToken)
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+
+        var botClient = GetBotClient(scope);
+            
         var receiverOptions = new ReceiverOptions
         {
             AllowedUpdates = [ UpdateType.Message ],
             ThrowPendingUpdates = true,
         };
         
-        botClient.StartReceiving(UpdateHandler, ErrorHandler, receiverOptions, stoppingToken); // Запускаем бота
+        botClient.StartReceiving(UpdateHandler, ErrorHandler, receiverOptions, cancellationToken); // Запускаем бота
         
-        var mamkinInvestorBot = await botClient.GetMeAsync(stoppingToken); // Создаем переменную, в которую помещаем информацию о нашем боте.
+        var mamkinInvestorBot = await botClient.GetMeAsync(cancellationToken); // Создаем переменную, в которую помещаем информацию о нашем боте.
         _logger.LogInformation($"Бот {mamkinInvestorBot.FirstName} запущен!");
-        
-        await Task.Delay(Timeout.Infinite, stoppingToken);
+    }
+    
+    private TelegramBotClient GetBotClient(IServiceScope scope)
+    {
+        var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+        var httpClient = httpClientFactory.CreateClient("tg_bot_pooling_client");
+        return new TelegramBotClient(_tgBotAccessToken, httpClient);
     }
     
     private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -54,14 +80,14 @@ public class TelegramBotBackgroundService : BackgroundService
                     var message = update.Message!;
                     var user = message.From!;
 
-                    Console.WriteLine($"{user.FirstName} ({user.Id}) написал сообщение: {message.Text}");
+                    _logger.LogInformation($"{user.FirstName} ({user.Id}) написал сообщение: {message.Text}");
 
                     using var scope = _serviceScopeFactory.CreateScope();
                     
-                    var hotDerivationService =
-                        scope.ServiceProvider.GetRequiredService<HotDerivationService>();
+                    var hotDerivativesService =
+                        scope.ServiceProvider.GetRequiredService<HotDerivativesService>();
 
-                    var top10TradingPairs = await hotDerivationService.GetTop10TradingPairs();
+                    var top10TradingPairs = await hotDerivativesService.GetTop10TradingPairs();
                     
                     var messageText = message.Text is "делай" or "покажи"
                         ? top10TradingPairs.GetAsString()
@@ -69,29 +95,29 @@ public class TelegramBotBackgroundService : BackgroundService
                     
                     await botClient.SendTextMessageAsync(
                         _chatId,
-                        messageText,
-                        cancellationToken: cancellationToken
-                    );
+                        "показал: \n\n" + messageText,
+                        cancellationToken: cancellationToken);
                     return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            _logger.LogError(ex, "TelegramBotBackgroundService.UpdateHandler");
         }
     }
 
-    private static Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
+    private Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
     {
         var errorMessage = error switch
         {
             ApiRequestException apiRequestException
-                => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}\n{apiRequestException.StackTrace}",
             _ => error.ToString()
         };
 
-        Console.WriteLine(errorMessage);
+        _logger.LogError(errorMessage);
+        
         return Task.CompletedTask;
     }
 }

@@ -2,12 +2,29 @@ version: '3.6'
 
 services:
   mamkin-investor-api:
-    image: chipseky/mamkin-investor:0.0.1
+    image: chipseky/mamkin-investor:0.0.40
     environment:
+      - ConnectionStrings__MamkinInvestorDatabase=Host=postgresdb;Port=5432;Database=mamkin-investor;Username=${DB_USERNAME:-xxx};Password=${DB_PASSWORD:-xxx};
       - Bybit__ApiKey=${BYBIT_API_KEY:-xxx}
       - Bybit__ApiSecret=${BYBIT_API_SECRET:-xxx}
       - Telegram__BotAccessToken=${TG_BOT_ACCESS_TOKEN:-xxx}
       - Telegram__GroupChatId=${TG_BOT_GROUP_CHAT_ID:-xxx}
     ports:
       - 5555:8080
+    restart: always
+  postgresdb:
+    image: postgres:15.3-alpine
+    ports:
+      - 5435:5432
+    volumes:
+      - /var/log/mamkin-investor/postgresql/:/var/log/postgresql
+      - /var/lib/mamkin-investor/postgresql/:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USERNAME:-xxx}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-xxx}
+      - PGDATA=/var/lib/postgresql/data/mamkin-investor
+    command: 
+      - postgres
+      - --shared_buffers=256MB
+      - --max_connections=1000
     restart: always

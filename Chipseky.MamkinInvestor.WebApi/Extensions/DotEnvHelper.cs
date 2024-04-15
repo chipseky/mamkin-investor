@@ -16,10 +16,12 @@ public static class DotEnvExtension
                 '=',
                 StringSplitOptions.RemoveEmptyEntries);
 
-            if (parts.Length != 2)
+            if (parts.Length < 2)
                 continue;
             
-            Environment.SetEnvironmentVariable(parts[0], parts[1]);
+            Environment.SetEnvironmentVariable(
+                variable: parts[0], 
+                value: string.Join("=", parts.Skip(1)));
         }
 
         configuration.AddEnvironmentVariables();

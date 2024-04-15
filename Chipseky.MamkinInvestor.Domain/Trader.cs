@@ -7,13 +7,14 @@ public class Trader
     private readonly OrdersManager _ordersManager;
     private readonly ILogger<Trader> _logger;
 
-    private readonly TradingPairsManager _tradingPairsManager = new();
+    private readonly TradingPairsManager _tradingPairsManager;
     private readonly Adviser _adviser = new();
 
-    public Trader(OrdersManager ordersManager, ILogger<Trader> logger)
+    public Trader(OrdersManager ordersManager, ILogger<Trader> logger, TradingPairsManager tradingPairsManager)
     {
         _ordersManager = ordersManager;
         _logger = logger;
+        _tradingPairsManager = tradingPairsManager;
     }
 
     public async Task Trade(IDictionary<string, TradingPairPriceChange> marketData)

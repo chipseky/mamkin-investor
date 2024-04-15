@@ -7,20 +7,25 @@ using Microsoft.Extensions.Options;
 
 namespace Chipseky.MamkinInvestor.WebApi.Services;
 
-public class HotDerivationService
+public class HotDerivativesService
 {
     private readonly string _apiKey;
     private readonly string _apiSecret;
-    
-    public HotDerivationService(IOptions<BybitSettings> options)
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public HotDerivativesService(IOptions<BybitSettings> options, IHttpClientFactory httpClientFactory)
     {
+        _httpClientFactory = httpClientFactory;
         _apiKey = options.Value.ApiKey;
         _apiSecret = options.Value.ApiSecret;
     }
 
     public async Task<Dictionary<string, TradingPairPriceChange>> GetTop10TradingPairs()
     {
-        var bybitClient = new BybitRestClient(o => { o.ApiCredentials = new ApiCredentials(_apiKey, _apiSecret); });
+        var bybitClient = new BybitRestClient(
+            httpClient: _httpClientFactory.CreateClient(),
+            optionsDelegate: o => { o.ApiCredentials = new ApiCredentials(_apiKey, _apiSecret); },
+            loggerFactory: null);
 
         var hotTickers = await bybitClient.DerivativesApi.ExchangeData.GetTickerAsync(Category.Undefined);
 
