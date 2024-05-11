@@ -23,7 +23,7 @@ public class HotDerivativesService
     public async Task<Dictionary<string, TradingPairPriceChange>> GetTop10TradingPairs()
     {
         var bybitClient = new BybitRestClient(
-            httpClient: _httpClientFactory.CreateClient(),
+            httpClient: _httpClientFactory.CreateClient("bybit_client"),
             optionsDelegate: o => { o.ApiCredentials = new ApiCredentials(_apiKey, _apiSecret); },
             loggerFactory: null);
 

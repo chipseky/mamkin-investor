@@ -1,0 +1,11 @@
+.logo {
+  margin-top: 0 !important; // to override _ngcontent-ng
+  font-size: 3em;
+  background: linear-gradient(90deg in oklab, #ef0b1d, #910ef2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.right-side .is-active {
+  border: 1px solid oklch(53.18% 0.28 296.97);
+}

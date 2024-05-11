@@ -46,13 +46,11 @@ public class TradingBackgroundService : BackgroundService
 
                 var botClient = GetBotClient(scope);
 
-                _logger.LogDebug("time to show start");
                 await botClient.SendTextMessageAsync(
                     _chatId,
                     top10TradingPairs.GetAsString(),
                     cancellationToken: stoppingToken
                 );
-                _logger.LogDebug("time to show end");
             }
             catch (Exception ex)
             {

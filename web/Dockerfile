@@ -1,4 +1,4 @@
-FROM node:20.9.0 as builder-step
+FROM node:20.12.2 as builder-step
 WORKDIR /app
 
 COPY package.json package-lock.json ./

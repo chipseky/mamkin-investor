@@ -9,7 +9,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
+//    "esModuleInterop": true, because of this issue https://github.com/RicoSuter/NSwag/issues/1859
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,

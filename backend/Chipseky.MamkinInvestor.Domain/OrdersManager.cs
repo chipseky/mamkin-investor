@@ -11,8 +11,6 @@ public class OrdersManager
         _ordersRepository = ordersRepository;
     }
 
-    public async Task<IEnumerable<Order>> GetAllOrders() => await _ordersRepository.GetAll();
-
     public async Task<decimal> CalcProfit()
     {
         var allOrders = await _ordersRepository.GetAll();

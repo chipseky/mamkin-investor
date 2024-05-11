@@ -1,4 +1,5 @@
 using Chipseky.MamkinInvestor.Domain;
+using Chipseky.MamkinInvestor.WebApi.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chipseky.MamkinInvestor.WebApi.Controllers;
@@ -6,11 +7,15 @@ namespace Chipseky.MamkinInvestor.WebApi.Controllers;
 [ApiController]
 public class OrdersController : ControllerBase
 {
-    [HttpGet("/api/orders")]
-    [ProducesResponseType<IEnumerable<Order>>(200)]
-    public async Task<IActionResult> GetOrders([FromServices] OrdersManager ordersManager)
+    [HttpPost("/api/orders")]
+    [ProducesResponseType<IPagedData<Order>>(200)]
+    public async Task<IActionResult> GetOrders(
+        [FromBody] OrdersTableDataQuery query, 
+        [FromServices] OrdersTableDataQueryHandler ordersTableDataQueryHandler)
     {
-        return Ok(await ordersManager.GetAllOrders());
+        var orders = await ordersTableDataQueryHandler.Handle(query);
+        
+        return Ok(orders);
     }
 
     [HttpGet("/api/orders/profit")]

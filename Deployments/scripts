@@ -1,7 +1,8 @@
 docker compose!!!
 
 docker build -t mamkin-investor .
-
 docker tag mamkin-investor chipseky/mamkin-investor:0.0.40
 
-docker push chipseky/mamkin-investor:0.0.40
+
+docker build -t mamkin-investor-web .
+docker tag mamkin-investor-web chipseky/mamkin-investor-web:0.0.1
