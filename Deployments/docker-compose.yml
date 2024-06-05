@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   mamkin-investor-web:
-    image: chipseky/mamkin-investor-web:0.0.1
+    image: chipseky/mamkin-investor-web:0.0.2
     ports:
       - 7779:81
       - 7778:443
@@ -10,7 +10,7 @@ services:
     depends_on: 
       - mamkin-investor-api
   mamkin-investor-api:
-    image: chipseky/mamkin-investor:0.0.40
+    image: chipseky/mamkin-investor:0.0.41
     environment:
       - ConnectionStrings__MamkinInvestorDatabase=Host=postgresdb;Port=5432;Database=mamkin-investor;Username=${DB_USERNAME:-xxx};Password=${DB_PASSWORD:-xxx};
       - Bybit__ApiKey=${BYBIT_API_KEY:-xxx}
