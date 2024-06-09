@@ -1,18 +1,18 @@
 import {CollectionViewer, DataSource} from "@angular/cdk/collections";
 import {BehaviorSubject, catchError, finalize, Observable, of} from "rxjs";
-import {Order, OrdersClient, OrdersTableDataQuery, OrdersType, PagedDataOfOrder} from "../api-clients";
+import {TradesTableItem, TradesClient, TradesTableDataQuery, TradesTableOrderType, PagedDataOfTradesTableItem} from "../api-clients";
 
-export class OrdersDataSource implements DataSource<Order> {
+export class TradesDataSource implements DataSource<TradesTableItem> {
 
-  private ordersSubject = new BehaviorSubject<Order[]>([]);
+  private ordersSubject = new BehaviorSubject<TradesTableItem[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
 
   public loading$ = this.loadingSubject.asObservable();
   public totalCount: number = 0;
 
-  constructor(private ordersClient: OrdersClient) {}
+  constructor(private tradesClient: TradesClient) {}
 
-  connect(_: CollectionViewer): Observable<Order[]> {
+  connect(_: CollectionViewer): Observable<TradesTableItem[]> {
     return this.ordersSubject.asObservable();
   }
 
@@ -21,10 +21,10 @@ export class OrdersDataSource implements DataSource<Order> {
     this.loadingSubject.complete();
   }
 
-  loadOrders(filter: string = '', ordersType: OrdersType, pageIndex: number = 0, pageSize: number = 10) {
+  loadTrades(filter: string = '', ordersType: TradesTableOrderType, pageIndex: number = 0, pageSize: number = 10) {
     this.loadingSubject.next(true);
 
-    this.ordersClient.getOrders(new OrdersTableDataQuery({
+    this.tradesClient.getTrades(new TradesTableDataQuery({
       tradingPair: filter,
       ordersType: ordersType,
       page: pageIndex,
@@ -32,7 +32,7 @@ export class OrdersDataSource implements DataSource<Order> {
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))
       ).subscribe(data => {
-          let pagedData = data as PagedDataOfOrder;
+          let pagedData = data as PagedDataOfTradesTableItem;
           this.ordersSubject.next(pagedData.items);
           this.totalCount = pagedData.totalCount;
         });

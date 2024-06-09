@@ -1,45 +1,67 @@
+using Chipseky.MamkinInvestor.Domain.Repositories;
+using Chipseky.MamkinInvestor.Domain.TradeEvents;
+
 namespace Chipseky.MamkinInvestor.Domain;
 
 public class OrdersManager
 {
     private readonly IOrdersApi _ordersApi;
-    private readonly IOrdersRepository _ordersRepository;
+    private readonly ITradeEventsRepository _tradeEventsRepository;
+    private readonly ITradeRepository _tradeRepository;
     
-    public OrdersManager(IOrdersApi ordersApi, IOrdersRepository ordersRepository)
+    public OrdersManager(IOrdersApi ordersApi, ITradeEventsRepository tradeEventsRepository, ITradeRepository tradeRepository)
     {
         _ordersApi = ordersApi;
-        _ordersRepository = ordersRepository;
+        _tradeEventsRepository = tradeEventsRepository;
+        _tradeRepository = tradeRepository;
     }
 
     public async Task<decimal> CalcProfit()
     {
-        var allOrders = await _ordersRepository.GetAll();
-
-        var result = allOrders.Select(o => new
-            {
-                o.TradingPair,
-                o.OrderType,
-                Price = o.OrderType == OrderType.Buy ? -o.ForecastedPrice : o.ForecastedPrice
-            })
-            .GroupBy(o => new { o.TradingPair })
-            .Where(g => g.Count() % 2 == 0) // don't consider open positions
-            .SelectMany(g => g.Select(i => i.Price))
-            .Sum();
-
-        return result;
+        throw new NotImplementedException();
     }
 
-    public async Task CreateByOrder(string tradingPair, int coinsAmount, decimal forecastedPrice)
+    public async Task CreateBuyOrder(string tradingPair, int coinsCount, decimal expectedCoinPrice)
     {
-        var order = Order.CreateByOrder(tradingPair, coinsAmount, forecastedPrice);
-        await _ordersApi.PlaceBuyOrder(order.TradingPair, coinsAmount);
-        await _ordersRepository.Save(order);
+        var tradeId = Guid.NewGuid();
+        var buyIntentionCreatedEvent = new BuyIntentionCreated(tradingPair, tradeId, coinsCount, expectedCoinPrice);
+        await _tradeEventsRepository.Store(buyIntentionCreatedEvent);
+        
+        var result = await _ordersApi.PlaceBuyOrder(tradingPair, coinsCount);
+
+        if (result.Succeeded)
+        {
+            var buyIntentionCommittedEvent = new BuyIntentionCommitted(tradeId, result.CoinsCount, result.ActualPrice);
+            await _tradeEventsRepository.Store(buyIntentionCommittedEvent);
+        }
+        else
+        {
+            var buyIntentionFailedEvent = new BuyIntentionFailed(tradeId, result.ErrorReason!);
+            await _tradeEventsRepository.Store(buyIntentionFailedEvent);
+        }
     }
 
-    public async Task CreateSellOrder(string tradingPair, int coinsAmount, decimal forecastedPrice)
+    public async Task CreateSellOrder(string tradingPair, decimal expectedCoinPrice)
     {
-        var order = Order.CreateSellOrder(tradingPair, coinsAmount, forecastedPrice);
-        await _ordersApi.PlaceSellOrder(order.TradingPair, coinsAmount);
-        await _ordersRepository.Save(order);
+        var trade = await _tradeRepository.GetCurrentTrade(tradingPair);
+
+        if (trade == null)
+            return;
+
+        var sellIntentionEvent = new SellIntentionCreated(trade.TradeId, trade.HeldCoinsCount, expectedCoinPrice);
+        await _tradeEventsRepository.Store(sellIntentionEvent);
+
+        var result = await _ordersApi.PlaceSellOrder(trade.TradingPair, trade.HeldCoinsCount);
+
+        if (result.Succeeded)
+        {
+            var buyIntentionCommittedEvent = new SellIntentionCommitted(trade.TradeId, result.CoinsCount, result.ActualPrice);
+            await _tradeEventsRepository.Store(buyIntentionCommittedEvent);
+        }
+        else
+        {
+            var buyIntentionFailedEvent = new SellIntentionFailed(trade.TradeId, result.ErrorReason!);
+            await _tradeEventsRepository.Store(buyIntentionFailedEvent);
+        }
     }
 }

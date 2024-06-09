@@ -1,0 +1,1 @@
+You can read about using PostgreSQL replications slots here: https://www.bytefish.de/blog/postgres_logical_replication_dotnet.html

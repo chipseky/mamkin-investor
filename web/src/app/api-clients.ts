@@ -18,7 +18,7 @@ export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 @Injectable({
     providedIn: 'root'
 })
-export class OrdersClient {
+export class TradesClient {
     private http: HttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -28,8 +28,8 @@ export class OrdersClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "http://localhost:5083";
     }
 
-    getOrders(query: OrdersTableDataQuery): Observable<PagedDataOfOrder> {
-        let url_ = this.baseUrl + "/api/orders";
+    getTrades(query: TradesTableDataQuery): Observable<PagedDataOfTradesTableItem> {
+        let url_ = this.baseUrl + "/api/trades";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(query);
@@ -46,20 +46,20 @@ export class OrdersClient {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetOrders(response_);
+            return this.processGetTrades(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetOrders(response_ as any);
+                    return this.processGetTrades(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<PagedDataOfOrder>;
+                    return _observableThrow(e) as any as Observable<PagedDataOfTradesTableItem>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<PagedDataOfOrder>;
+                return _observableThrow(response_) as any as Observable<PagedDataOfTradesTableItem>;
         }));
     }
 
-    protected processGetOrders(response: HttpResponseBase): Observable<PagedDataOfOrder> {
+    protected processGetTrades(response: HttpResponseBase): Observable<PagedDataOfTradesTableItem> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -70,7 +70,60 @@ export class OrdersClient {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PagedDataOfOrder.fromJS(resultData200);
+            result200 = PagedDataOfTradesTableItem.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getTradeEvents(query: TradeEventsTableDataQuery): Observable<PagedDataOfObject> {
+        let url_ = this.baseUrl + "/api/trade-events";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(query);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTradeEvents(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTradeEvents(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PagedDataOfObject>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PagedDataOfObject>;
+        }));
+    }
+
+    protected processGetTradeEvents(response: HttpResponseBase): Observable<PagedDataOfObject> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedDataOfObject.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -82,7 +135,7 @@ export class OrdersClient {
     }
 
     calcProfit(): Observable<string> {
-        let url_ = this.baseUrl + "/api/orders/profit";
+        let url_ = this.baseUrl + "/api/trades/profit";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -132,121 +185,13 @@ export class OrdersClient {
     }
 }
 
-@Injectable({
-    providedIn: 'root'
-})
-export class TestClient {
-    private http: HttpClient;
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
-
-    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
-        this.http = http;
-        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "http://localhost:5083";
-    }
-
-    test(): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/test";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            withCredentials: true,
-            headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processTest(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processTest(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
-        }));
-    }
-
-    protected processTest(response: HttpResponseBase): Observable<FileResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    ping(): Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/ping";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            withCredentials: true,
-            headers: new HttpHeaders({
-                "Accept": "application/octet-stream"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processPing(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processPing(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<FileResponse>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<FileResponse>;
-        }));
-    }
-
-    protected processPing(response: HttpResponseBase): Observable<FileResponse> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-}
-
-export class PagedDataOfOrder implements IPagedDataOfOrder {
+export class PagedDataOfTradesTableItem implements IPagedDataOfTradesTableItem {
     page!: number;
     pageSize!: number;
     totalCount!: number;
-    items!: Order[];
+    items!: TradesTableItem[];
 
-    constructor(data?: IPagedDataOfOrder) {
+    constructor(data?: IPagedDataOfTradesTableItem) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -266,14 +211,14 @@ export class PagedDataOfOrder implements IPagedDataOfOrder {
             if (Array.isArray(_data["items"])) {
                 this.items = [] as any;
                 for (let item of _data["items"])
-                    this.items!.push(Order.fromJS(item));
+                    this.items!.push(TradesTableItem.fromJS(item));
             }
         }
     }
 
-    static fromJS(data: any): PagedDataOfOrder {
+    static fromJS(data: any): PagedDataOfTradesTableItem {
         data = typeof data === 'object' ? data : {};
-        let result = new PagedDataOfOrder();
+        let result = new PagedDataOfTradesTableItem();
         result.init(data);
         return result;
     }
@@ -292,22 +237,23 @@ export class PagedDataOfOrder implements IPagedDataOfOrder {
     }
 }
 
-export interface IPagedDataOfOrder {
+export interface IPagedDataOfTradesTableItem {
     page: number;
     pageSize: number;
     totalCount: number;
-    items: Order[];
+    items: TradesTableItem[];
 }
 
-export class Order implements IOrder {
-    orderId?: string;
-    createdAt?: Date;
-    coinsAmount?: number;
+export class TradesTableItem implements ITradesTableItem {
+    tradeId?: string;
     tradingPair?: string;
-    orderType?: OrderType;
-    forecastedPrice?: number;
+    createdAt?: Date;
+    heldCoinsCount?: number;
+    currentProfit?: number;
+    closed?: boolean;
+    orders?: TradeOrder[];
 
-    constructor(data?: IOrder) {
+    constructor(data?: ITradesTableItem) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -318,41 +264,104 @@ export class Order implements IOrder {
 
     init(_data?: any) {
         if (_data) {
-            this.orderId = _data["orderId"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.coinsAmount = _data["coinsAmount"];
+            this.tradeId = _data["tradeId"];
             this.tradingPair = _data["tradingPair"];
-            this.orderType = _data["orderType"];
-            this.forecastedPrice = _data["forecastedPrice"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.heldCoinsCount = _data["heldCoinsCount"];
+            this.currentProfit = _data["currentProfit"];
+            this.closed = _data["closed"];
+            if (Array.isArray(_data["orders"])) {
+                this.orders = [] as any;
+                for (let item of _data["orders"])
+                    this.orders!.push(TradeOrder.fromJS(item));
+            }
         }
     }
 
-    static fromJS(data: any): Order {
+    static fromJS(data: any): TradesTableItem {
         data = typeof data === 'object' ? data : {};
-        let result = new Order();
+        let result = new TradesTableItem();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["orderId"] = this.orderId;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["coinsAmount"] = this.coinsAmount;
+        data["tradeId"] = this.tradeId;
         data["tradingPair"] = this.tradingPair;
-        data["orderType"] = this.orderType;
-        data["forecastedPrice"] = this.forecastedPrice;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["heldCoinsCount"] = this.heldCoinsCount;
+        data["currentProfit"] = this.currentProfit;
+        data["closed"] = this.closed;
+        if (Array.isArray(this.orders)) {
+            data["orders"] = [];
+            for (let item of this.orders)
+                data["orders"].push(item.toJSON());
+        }
         return data;
     }
 }
 
-export interface IOrder {
-    orderId?: string;
-    createdAt?: Date;
-    coinsAmount?: number;
+export interface ITradesTableItem {
+    tradeId?: string;
     tradingPair?: string;
+    createdAt?: Date;
+    heldCoinsCount?: number;
+    currentProfit?: number;
+    closed?: boolean;
+    orders?: TradeOrder[];
+}
+
+export class TradeOrder implements ITradeOrder {
+    tradeOrderId?: string;
+    createdAt?: Date;
+    coinsCount?: number;
+    actualPrice?: number;
     orderType?: OrderType;
-    forecastedPrice?: number;
+
+    constructor(data?: ITradeOrder) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.tradeOrderId = _data["tradeOrderId"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.coinsCount = _data["coinsCount"];
+            this.actualPrice = _data["actualPrice"];
+            this.orderType = _data["orderType"];
+        }
+    }
+
+    static fromJS(data: any): TradeOrder {
+        data = typeof data === 'object' ? data : {};
+        let result = new TradeOrder();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tradeOrderId"] = this.tradeOrderId;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["coinsCount"] = this.coinsCount;
+        data["actualPrice"] = this.actualPrice;
+        data["orderType"] = this.orderType;
+        return data;
+    }
+}
+
+export interface ITradeOrder {
+    tradeOrderId?: string;
+    createdAt?: Date;
+    coinsCount?: number;
+    actualPrice?: number;
+    orderType?: OrderType;
 }
 
 export enum OrderType {
@@ -360,13 +369,13 @@ export enum OrderType {
     Sell = 1,
 }
 
-export class OrdersTableDataQuery implements IOrdersTableDataQuery {
+export class TradesTableDataQuery implements ITradesTableDataQuery {
     tradingPair?: string;
-    ordersType?: OrdersType;
+    ordersType?: TradesTableOrderType;
     page?: number;
     pageSize?: number;
 
-    constructor(data?: IOrdersTableDataQuery) {
+    constructor(data?: ITradesTableDataQuery) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -384,9 +393,9 @@ export class OrdersTableDataQuery implements IOrdersTableDataQuery {
         }
     }
 
-    static fromJS(data: any): OrdersTableDataQuery {
+    static fromJS(data: any): TradesTableDataQuery {
         data = typeof data === 'object' ? data : {};
-        let result = new OrdersTableDataQuery();
+        let result = new TradesTableDataQuery();
         result.init(data);
         return result;
     }
@@ -401,24 +410,116 @@ export class OrdersTableDataQuery implements IOrdersTableDataQuery {
     }
 }
 
-export interface IOrdersTableDataQuery {
+export interface ITradesTableDataQuery {
     tradingPair?: string;
-    ordersType?: OrdersType;
+    ordersType?: TradesTableOrderType;
     page?: number;
     pageSize?: number;
 }
 
-export enum OrdersType {
+export enum TradesTableOrderType {
     All = 0,
     Opened = 1,
     Closed = 2,
 }
 
-export interface FileResponse {
-    data: Blob;
-    status: number;
-    fileName?: string;
-    headers?: { [name: string]: any };
+export class PagedDataOfObject implements IPagedDataOfObject {
+    page!: number;
+    pageSize!: number;
+    totalCount!: number;
+    items!: any[];
+
+    constructor(data?: IPagedDataOfObject) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.items = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.page = _data["page"];
+            this.pageSize = _data["pageSize"];
+            this.totalCount = _data["totalCount"];
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): PagedDataOfObject {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedDataOfObject();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["page"] = this.page;
+        data["pageSize"] = this.pageSize;
+        data["totalCount"] = this.totalCount;
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item);
+        }
+        return data;
+    }
+}
+
+export interface IPagedDataOfObject {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    items: any[];
+}
+
+export class TradeEventsTableDataQuery implements ITradeEventsTableDataQuery {
+    page?: number;
+    pageSize?: number;
+
+    constructor(data?: ITradeEventsTableDataQuery) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.page = _data["page"];
+            this.pageSize = _data["pageSize"];
+        }
+    }
+
+    static fromJS(data: any): TradeEventsTableDataQuery {
+        data = typeof data === 'object' ? data : {};
+        let result = new TradeEventsTableDataQuery();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["page"] = this.page;
+        data["pageSize"] = this.pageSize;
+        return data;
+    }
+}
+
+export interface ITradeEventsTableDataQuery {
+    page?: number;
+    pageSize?: number;
 }
 
 export class SwaggerException extends Error {

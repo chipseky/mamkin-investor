@@ -36,19 +36,18 @@ public class TradingBackgroundService : BackgroundService
             {
                 using var scope = _serviceScopeFactory.CreateScope();
                 
+                var trader = scope.ServiceProvider.GetRequiredService<Trader>();
                 var hotDerivativesService = scope.ServiceProvider.GetRequiredService<HotDerivativesService>();
 
-                var trader = scope.ServiceProvider.GetRequiredService<Trader>();
+                var top10HotTradingPairs = await hotDerivativesService.GetTop10TradingPairs();
 
-                var top10TradingPairs = await hotDerivativesService.GetTop10TradingPairs();
-
-                await trader.Trade(top10TradingPairs);
+                await trader.Feed(top10HotTradingPairs);
 
                 var botClient = GetBotClient(scope);
 
                 await botClient.SendTextMessageAsync(
                     _chatId,
-                    top10TradingPairs.GetAsString(),
+                    top10HotTradingPairs.GetAsString(),
                     cancellationToken: stoppingToken
                 );
             }

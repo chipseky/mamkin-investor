@@ -5,6 +5,7 @@ using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240612142705_AddTradeEntity")]
+    partial class AddTradeEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,7 +50,7 @@ namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
                         .HasColumnType("numeric")
                         .HasColumnName("held_coins_count");
 
-                    b.Property<IEnumerable<TradeOrder>>("History")
+                    b.Property<List<TradeOrder>>("History")
                         .IsRequired()
                         .HasColumnType("json")
                         .HasColumnName("history");
@@ -56,10 +59,6 @@ namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("trading_pair");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
 
                     b.HasKey("TradeId")
                         .HasName("pk_trades");

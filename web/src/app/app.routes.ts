@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { OrdersComponent } from './orders/orders.component';
+import { TradesComponent } from './trades/trades.component';
+import {TradeEventsComponent} from "./trade-events/trade-events.component";
 
 export const routes: Routes = [
     {
@@ -9,7 +9,11 @@ export const routes: Routes = [
         component: DashboardComponent
     },
     {
-        path: 'orders',
-        component: OrdersComponent
+        path: 'trades',
+        component: TradesComponent
+    },
+    {
+      path: 'trade-events',
+      component: TradeEventsComponent
     }
 ];

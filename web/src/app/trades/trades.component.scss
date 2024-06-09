@@ -21,3 +21,12 @@ table {
   top: calc(50% - 50px);
   left: calc(50% - 50px);
 }
+
+tr.trade-details-row {
+  height: 0;
+}
+
+.trade-details {
+  overflow: hidden;
+  display: flex;
+}
