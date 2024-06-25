@@ -12,6 +12,7 @@ public static class OpenApiServiceCollectionExtensions
     {
         services.AddOpenApiDocument((settings, _) =>
         {
+            settings.Title = "mamkin investor api";
             settings.SchemaSettings.TypeMappers.Add(new PagedDataSwaggerMapper());
         });
 

@@ -1,13 +1,13 @@
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import {MatTableModule} from "@angular/material/table";
-import {TradesClient, TradesTableItem, TradesTableOrderType} from "../api-clients";
+import {TradesClient, TradeState} from "../api-clients";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {TradesDataSource} from "../datasources/trades-data-source";
 import {debounceTime, distinctUntilChanged, fromEvent, merge, tap} from "rxjs";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
-import {AsyncPipe, JsonPipe, NgClass} from "@angular/common";
+import {AsyncPipe, JsonPipe, NgClass } from "@angular/common";
 import {MatRadioButton, MatRadioGroup} from "@angular/material/radio";
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {FormsModule} from "@angular/forms";
@@ -31,17 +31,17 @@ import {MatIcon} from "@angular/material/icon";
     AsyncPipe, MatRadioButton, MatRadioGroup, MatSortModule, FormsModule, MatIconButton, MatIcon, JsonPipe, NgClass],
 })
 export class TradesComponent implements AfterViewInit {
-  displayedColumns: string[] = ['tradeId', 'createdAt', 'coinsAmount', 'tradingPair'];
+  displayedColumns: string[] = ['indicator', 'tradeId', 'createdAt', 'coinsAmount', 'tradingPair', 'state'];
   columnsToDisplayWithExpand = [...this.displayedColumns, 'expand'];
   expandedElement: any;
   dataSource!: TradesDataSource;
-  protected readonly OrdersType = TradesTableOrderType;
+  protected readonly TradeState = TradeState;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('searchBox') input!: ElementRef;
 
-  ordersType: string = TradesTableOrderType[TradesTableOrderType.All];
+  tradeState: string  = '';
 
   constructor(private tradesClient: TradesClient) {
     this.dataSource = new TradesDataSource(this.tradesClient);
@@ -63,7 +63,7 @@ export class TradesComponent implements AfterViewInit {
 
     // setTimeout is used because of ExpressionChangedAfterItHasBeenCheckedError. OrdersDataSource.loadingSubject initially has 'false' value
     setTimeout(() => this.dataSource.loadTrades('',
-      (<any>TradesTableOrderType)[this.ordersType],
+      this.tradeState == null ? null : (<any>TradeState)[this.tradeState],
       this.paginator.pageIndex,
       this.paginator.pageSize)
     );
@@ -76,7 +76,7 @@ export class TradesComponent implements AfterViewInit {
   loadTradesPage() {
     this.dataSource.loadTrades(
       this.input.nativeElement.value,
-      (<any>TradesTableOrderType)[this.ordersType],
+      this.tradeState == null ? null : (<any>TradeState)[this.tradeState],
       this.paginator.pageIndex,
       this.paginator.pageSize);
   }

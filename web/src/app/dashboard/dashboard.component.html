@@ -1,1 +1,18 @@
-<p>your profit is: ...$</p>
+<p>dashboard:</p>
+
+@if(balance$ | async; as balance) {
+  <div>
+    <span>your wallet balance is </span><span>{{balance.totalEquity}} USD</span>
+  </div>
+  <div class="assets-block">
+    <h4>assets:</h4>
+    @for (asset of balance.assets; track asset) {
+      <div class="asset-line">
+        <span>{{asset.asset}}: {{asset.equity}}</span>
+      </div>
+    }
+  </div>
+}
+@else {
+  <strong>loading...</strong>
+}

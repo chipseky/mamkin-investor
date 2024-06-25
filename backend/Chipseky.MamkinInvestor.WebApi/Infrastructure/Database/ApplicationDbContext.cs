@@ -31,6 +31,7 @@ public class ApplicationDbContext : DbContext
 
             builder.HasKey(t => t.TradeId);
             builder.Property(t => t.History).HasColumnType("json");
+            builder.Property(t => t.State).HasConversion<string>();
         });
     }
 }

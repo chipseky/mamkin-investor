@@ -18,14 +18,14 @@ public class TradingBackgroundService : BackgroundService
     public TradingBackgroundService(
         IServiceScopeFactory serviceScopeFactory,
         IOptions<TelegramSettings> telegramSettingsOptions,
-        IOptions<TradingBackgroundServiceSettings> hotDerivativesBackgroundServiceSettingsOptions,
+        IOptions<TradingBackgroundServiceSettings> tradingBackgroundServiceSettingsOptions,
         ILogger<TradingBackgroundService> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
         _tgBotAccessToken = telegramSettingsOptions.Value.BotAccessToken;
         _chatId = telegramSettingsOptions.Value.GroupChatId;
-        _checkPeriodInSeconds = hotDerivativesBackgroundServiceSettingsOptions.Value.CheckPeriodInSeconds;
+        _checkPeriodInSeconds = tradingBackgroundServiceSettingsOptions.Value.CheckPeriodInSeconds;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,9 +37,9 @@ public class TradingBackgroundService : BackgroundService
                 using var scope = _serviceScopeFactory.CreateScope();
                 
                 var trader = scope.ServiceProvider.GetRequiredService<Trader>();
-                var hotDerivativesService = scope.ServiceProvider.GetRequiredService<HotDerivativesService>();
+                var hotCoinsService = scope.ServiceProvider.GetRequiredService<HotCoinsService>();
 
-                var top10HotTradingPairs = await hotDerivativesService.GetTop10TradingPairs();
+                var top10HotTradingPairs = await hotCoinsService.GetTop10TradingPairs();
 
                 await trader.Feed(top10HotTradingPairs);
 

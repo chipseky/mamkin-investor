@@ -1,6 +1,6 @@
 import {CollectionViewer, DataSource} from "@angular/cdk/collections";
 import {BehaviorSubject, catchError, finalize, Observable, of} from "rxjs";
-import {TradesTableItem, TradesClient, TradesTableDataQuery, TradesTableOrderType, PagedDataOfTradesTableItem} from "../api-clients";
+import {TradesTableItem, TradesClient, TradesTableDataQuery, TradeState, PagedDataOfTradesTableItem} from "../api-clients";
 
 export class TradesDataSource implements DataSource<TradesTableItem> {
 
@@ -21,12 +21,12 @@ export class TradesDataSource implements DataSource<TradesTableItem> {
     this.loadingSubject.complete();
   }
 
-  loadTrades(filter: string = '', ordersType: TradesTableOrderType, pageIndex: number = 0, pageSize: number = 10) {
+  loadTrades(filter: string = '', tradeState: TradeState, pageIndex: number = 0, pageSize: number = 10) {
     this.loadingSubject.next(true);
 
     this.tradesClient.getTrades(new TradesTableDataQuery({
       tradingPair: filter,
-      ordersType: ordersType,
+      tradeState: tradeState,
       page: pageIndex,
       pageSize: pageSize})).pipe(
         catchError(() => of([])),

@@ -3,7 +3,7 @@ namespace Chipseky.MamkinInvestor.Domain.TradeEvents;
 public class BuyIntentionCreated : TradeEvent
 {
     public string TradingPair { get; private set; }
-    public int CoinsCount { get; private set; }
+    public decimal UsdtQuantity { get; private set; }
     public decimal ExpectedPrice { get; private set; }
     
     private BuyIntentionCreated() : base() {}
@@ -11,11 +11,11 @@ public class BuyIntentionCreated : TradeEvent
     public BuyIntentionCreated(
         string tradingPair,
         Guid tradeId, 
-        int coinsCount, 
+        decimal usdtQuantity, 
         decimal expectedPrice) : base(tradeId)
     {
         TradingPair = tradingPair;
-        CoinsCount = coinsCount;
+        UsdtQuantity = usdtQuantity;
         ExpectedPrice = expectedPrice;
     }
 }

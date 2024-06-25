@@ -30,3 +30,49 @@ tr.trade-details-row {
   overflow: hidden;
   display: flex;
 }
+
+.mat-column-indicator {
+  width: 5px;
+  min-width: 5px;
+  padding: 0;
+}
+
+.opened-trade {
+  .indicator {
+    background-color: orange;
+  }
+
+  .text-indicator {
+    color: orange;
+  }
+}
+
+.closed-trade {
+  .indicator {
+    background-color: green;
+  }
+
+  .text-indicator {
+    color: green;
+  }
+}
+
+.created-trade {
+  .indicator {
+    background-color: #ffea00;
+  }
+
+  .text-indicator {
+    color: #ffea00;
+  }
+}
+
+.failed-trade {
+  .indicator {
+    background-color: red;
+  }
+
+  .text-indicator {
+    color: red;
+  }
+}

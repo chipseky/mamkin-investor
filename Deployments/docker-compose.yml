@@ -18,6 +18,7 @@ services:
       - Telegram__BotAccessToken=${TG_BOT_ACCESS_TOKEN:-xxx}
       - Telegram__GroupChatId=${TG_BOT_GROUP_CHAT_ID:-xxx}
       - CORS__Origins__0=${CORS_ORIGINS_0:-http://localhost:4200}
+      - TradingBackgroundServiceSettings__CheckPeriodInSeconds={CHECK_PERIOD_SECONDS:-60}
     ports:
       - 5555:8080
     depends_on: 

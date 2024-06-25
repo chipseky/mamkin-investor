@@ -1,5 +1,7 @@
 using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.Domain.Repositories;
+using Chipseky.MamkinInvestor.Infrastructure;
+using Chipseky.MamkinInvestor.Infrastructure.Options;
 using Chipseky.MamkinInvestor.WebApi.Extensions;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.ReplicationSlots;
@@ -15,8 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.LoadDotEnv();
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
@@ -56,8 +56,10 @@ builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("T
 builder.Services.Configure<BybitSettings>(builder.Configuration.GetSection("Bybit"));
 builder.Services.Configure<TradingBackgroundServiceSettings>(builder.Configuration.GetSection("TradingBackgroundServiceSettings"));
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddSingleton<TradingPairsManager>();
-builder.Services.AddScoped<HotDerivativesService>();
+builder.Services.AddScoped<HotCoinsService>();
 builder.Services.AddScoped<IOrdersApi, OrdersApi>();
 builder.Services.AddScoped<OrdersManager>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
@@ -81,11 +83,12 @@ builder.Services.AddScoped<TradeEventsTableDataQueryHandler>();
 builder.Services.AddScoped<ITradeRepository, TradeRepository>();
 builder.Services.AddScoped<TradeEventsHandler>();
 
+builder.Services.AddScoped<LotSizeFilterService>();
+
 var app = builder.Build();
 
 app.MigrateDatabase();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();

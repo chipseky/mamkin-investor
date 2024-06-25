@@ -18,6 +18,177 @@ export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 @Injectable({
     providedIn: 'root'
 })
+export class DashboardClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "http://localhost:5083";
+    }
+
+    getBalance(): Observable<BybitBalance> {
+        let url_ = this.baseUrl + "/api/dashboard/balance";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetBalance(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetBalance(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BybitBalance>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BybitBalance>;
+        }));
+    }
+
+    protected processGetBalance(response: HttpResponseBase): Observable<BybitBalance> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = BybitBalance.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class SystemClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "http://localhost:5083";
+    }
+
+    test(): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/test";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processTest(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processTest(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processTest(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    ping(): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/ping";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPing(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPing(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processPing(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class TradesClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -185,6 +356,261 @@ export class TradesClient {
     }
 }
 
+/** Balance info */
+export class BybitBalance implements IBybitBalance {
+    /** Account type */
+    accountType?: AccountType;
+    /** Account LTV */
+    accountLtv?: number | undefined;
+    /** Account initial margin rate */
+    accountInitialMarginRate?: number | undefined;
+    /** Account maintenance margin rate */
+    accountMaintenanceMarginRate?: number | undefined;
+    /** Account equity in USD */
+    totalEquity?: number | undefined;
+    /** Total wallet balance in USD */
+    totalWalletBalance?: number | undefined;
+    /** Total margin balance in USD */
+    totalMarginBalance?: number | undefined;
+    /** Total available balance in USD */
+    totalAvailableBalance?: number | undefined;
+    /** Unrealized profit and loss in USD */
+    totalPerpUnrealizedPnl?: number | undefined;
+    /** Iniital margin in USD */
+    totalInitialMargin?: number | undefined;
+    /** Maintenance margin in USD */
+    totalMaintenanceMargin?: number | undefined;
+    /** Asset info */
+    assets?: BybitAssetBalance[];
+
+    constructor(data?: IBybitBalance) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.accountType = _data["accountType"];
+            this.accountLtv = _data["accountLtv"];
+            this.accountInitialMarginRate = _data["accountInitialMarginRate"];
+            this.accountMaintenanceMarginRate = _data["accountMaintenanceMarginRate"];
+            this.totalEquity = _data["totalEquity"];
+            this.totalWalletBalance = _data["totalWalletBalance"];
+            this.totalMarginBalance = _data["totalMarginBalance"];
+            this.totalAvailableBalance = _data["totalAvailableBalance"];
+            this.totalPerpUnrealizedPnl = _data["totalPerpUnrealizedPnl"];
+            this.totalInitialMargin = _data["totalInitialMargin"];
+            this.totalMaintenanceMargin = _data["totalMaintenanceMargin"];
+            if (Array.isArray(_data["assets"])) {
+                this.assets = [] as any;
+                for (let item of _data["assets"])
+                    this.assets!.push(BybitAssetBalance.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): BybitBalance {
+        data = typeof data === 'object' ? data : {};
+        let result = new BybitBalance();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["accountType"] = this.accountType;
+        data["accountLtv"] = this.accountLtv;
+        data["accountInitialMarginRate"] = this.accountInitialMarginRate;
+        data["accountMaintenanceMarginRate"] = this.accountMaintenanceMarginRate;
+        data["totalEquity"] = this.totalEquity;
+        data["totalWalletBalance"] = this.totalWalletBalance;
+        data["totalMarginBalance"] = this.totalMarginBalance;
+        data["totalAvailableBalance"] = this.totalAvailableBalance;
+        data["totalPerpUnrealizedPnl"] = this.totalPerpUnrealizedPnl;
+        data["totalInitialMargin"] = this.totalInitialMargin;
+        data["totalMaintenanceMargin"] = this.totalMaintenanceMargin;
+        if (Array.isArray(this.assets)) {
+            data["assets"] = [];
+            for (let item of this.assets)
+                data["assets"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+/** Balance info */
+export interface IBybitBalance {
+    /** Account type */
+    accountType?: AccountType;
+    /** Account LTV */
+    accountLtv?: number | undefined;
+    /** Account initial margin rate */
+    accountInitialMarginRate?: number | undefined;
+    /** Account maintenance margin rate */
+    accountMaintenanceMarginRate?: number | undefined;
+    /** Account equity in USD */
+    totalEquity?: number | undefined;
+    /** Total wallet balance in USD */
+    totalWalletBalance?: number | undefined;
+    /** Total margin balance in USD */
+    totalMarginBalance?: number | undefined;
+    /** Total available balance in USD */
+    totalAvailableBalance?: number | undefined;
+    /** Unrealized profit and loss in USD */
+    totalPerpUnrealizedPnl?: number | undefined;
+    /** Iniital margin in USD */
+    totalInitialMargin?: number | undefined;
+    /** Maintenance margin in USD */
+    totalMaintenanceMargin?: number | undefined;
+    /** Asset info */
+    assets?: BybitAssetBalance[];
+}
+
+/** Account type */
+export enum AccountType {
+    Contract = 0,
+    Spot = 1,
+    Investment = 2,
+    CopyTrading = 3,
+    Option = 4,
+    Fund = 5,
+    Unified = 6,
+}
+
+/** Asset balance info */
+export class BybitAssetBalance implements IBybitAssetBalance {
+    /** Asset name */
+    asset?: string;
+    /** Asset equity */
+    equity?: number | undefined;
+    /** Asset usd value */
+    usdValue?: number | undefined;
+    /** Asset balance */
+    walletBalance?: number;
+    /** [Spot] Available balance */
+    free?: number | undefined;
+    /** [Spot] Locked balance */
+    locked?: number | undefined;
+    /** Borrow amount */
+    borrowAmount?: number | undefined;
+    /** Available borrow amount */
+    availableToBorrow?: number | undefined;
+    /** Available withdrawal amount */
+    availableToWithdraw?: number | undefined;
+    /** Accrued interest */
+    accruedInterest?: number | undefined;
+    /** Total order initial margin */
+    totalOrderInitialMargin?: number | undefined;
+    /** Total position maintenance marging */
+    totalPositionInitialMargin?: number | undefined;
+    /** Total position maintenance margin */
+    totalPositionMaintenanceMargin?: number | undefined;
+    /** Unrealized profit and loss */
+    unrealizedPnl?: number | undefined;
+    /** Realized profit and loss */
+    realizedPnl?: number | undefined;
+    /** [Unified] Bonus */
+    bonus?: number | undefined;
+
+    constructor(data?: IBybitAssetBalance) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.asset = _data["asset"];
+            this.equity = _data["equity"];
+            this.usdValue = _data["usdValue"];
+            this.walletBalance = _data["walletBalance"];
+            this.free = _data["free"];
+            this.locked = _data["locked"];
+            this.borrowAmount = _data["borrowAmount"];
+            this.availableToBorrow = _data["availableToBorrow"];
+            this.availableToWithdraw = _data["availableToWithdraw"];
+            this.accruedInterest = _data["accruedInterest"];
+            this.totalOrderInitialMargin = _data["totalOrderInitialMargin"];
+            this.totalPositionInitialMargin = _data["totalPositionInitialMargin"];
+            this.totalPositionMaintenanceMargin = _data["totalPositionMaintenanceMargin"];
+            this.unrealizedPnl = _data["unrealizedPnl"];
+            this.realizedPnl = _data["realizedPnl"];
+            this.bonus = _data["bonus"];
+        }
+    }
+
+    static fromJS(data: any): BybitAssetBalance {
+        data = typeof data === 'object' ? data : {};
+        let result = new BybitAssetBalance();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["asset"] = this.asset;
+        data["equity"] = this.equity;
+        data["usdValue"] = this.usdValue;
+        data["walletBalance"] = this.walletBalance;
+        data["free"] = this.free;
+        data["locked"] = this.locked;
+        data["borrowAmount"] = this.borrowAmount;
+        data["availableToBorrow"] = this.availableToBorrow;
+        data["availableToWithdraw"] = this.availableToWithdraw;
+        data["accruedInterest"] = this.accruedInterest;
+        data["totalOrderInitialMargin"] = this.totalOrderInitialMargin;
+        data["totalPositionInitialMargin"] = this.totalPositionInitialMargin;
+        data["totalPositionMaintenanceMargin"] = this.totalPositionMaintenanceMargin;
+        data["unrealizedPnl"] = this.unrealizedPnl;
+        data["realizedPnl"] = this.realizedPnl;
+        data["bonus"] = this.bonus;
+        return data;
+    }
+}
+
+/** Asset balance info */
+export interface IBybitAssetBalance {
+    /** Asset name */
+    asset?: string;
+    /** Asset equity */
+    equity?: number | undefined;
+    /** Asset usd value */
+    usdValue?: number | undefined;
+    /** Asset balance */
+    walletBalance?: number;
+    /** [Spot] Available balance */
+    free?: number | undefined;
+    /** [Spot] Locked balance */
+    locked?: number | undefined;
+    /** Borrow amount */
+    borrowAmount?: number | undefined;
+    /** Available borrow amount */
+    availableToBorrow?: number | undefined;
+    /** Available withdrawal amount */
+    availableToWithdraw?: number | undefined;
+    /** Accrued interest */
+    accruedInterest?: number | undefined;
+    /** Total order initial margin */
+    totalOrderInitialMargin?: number | undefined;
+    /** Total position maintenance marging */
+    totalPositionInitialMargin?: number | undefined;
+    /** Total position maintenance margin */
+    totalPositionMaintenanceMargin?: number | undefined;
+    /** Unrealized profit and loss */
+    unrealizedPnl?: number | undefined;
+    /** Realized profit and loss */
+    realizedPnl?: number | undefined;
+    /** [Unified] Bonus */
+    bonus?: number | undefined;
+}
+
 export class PagedDataOfTradesTableItem implements IPagedDataOfTradesTableItem {
     page!: number;
     pageSize!: number;
@@ -250,7 +676,7 @@ export class TradesTableItem implements ITradesTableItem {
     createdAt?: Date;
     heldCoinsCount?: number;
     currentProfit?: number;
-    closed?: boolean;
+    state?: TradeState;
     orders?: TradeOrder[];
 
     constructor(data?: ITradesTableItem) {
@@ -269,7 +695,7 @@ export class TradesTableItem implements ITradesTableItem {
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
             this.heldCoinsCount = _data["heldCoinsCount"];
             this.currentProfit = _data["currentProfit"];
-            this.closed = _data["closed"];
+            this.state = _data["state"];
             if (Array.isArray(_data["orders"])) {
                 this.orders = [] as any;
                 for (let item of _data["orders"])
@@ -292,7 +718,7 @@ export class TradesTableItem implements ITradesTableItem {
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["heldCoinsCount"] = this.heldCoinsCount;
         data["currentProfit"] = this.currentProfit;
-        data["closed"] = this.closed;
+        data["state"] = this.state;
         if (Array.isArray(this.orders)) {
             data["orders"] = [];
             for (let item of this.orders)
@@ -308,16 +734,28 @@ export interface ITradesTableItem {
     createdAt?: Date;
     heldCoinsCount?: number;
     currentProfit?: number;
-    closed?: boolean;
+    state?: TradeState;
     orders?: TradeOrder[];
+}
+
+export enum TradeState {
+    Created = 0,
+    Opened = 1,
+    Closed = 2,
+    Failed = 3,
 }
 
 export class TradeOrder implements ITradeOrder {
     tradeOrderId?: string;
     createdAt?: Date;
-    coinsCount?: number;
-    actualPrice?: number;
-    orderType?: OrderType;
+    actualAveragePrice?: number | undefined;
+    quantity?: number;
+    quantityFilled?: number | undefined;
+    executedFee?: number | undefined;
+    valueFilled?: number | undefined;
+    valueRemaining?: number | undefined;
+    status?: OrderStatus;
+    orderSide?: OrderSide;
 
     constructor(data?: ITradeOrder) {
         if (data) {
@@ -332,9 +770,14 @@ export class TradeOrder implements ITradeOrder {
         if (_data) {
             this.tradeOrderId = _data["tradeOrderId"];
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.coinsCount = _data["coinsCount"];
-            this.actualPrice = _data["actualPrice"];
-            this.orderType = _data["orderType"];
+            this.actualAveragePrice = _data["actualAveragePrice"];
+            this.quantity = _data["quantity"];
+            this.quantityFilled = _data["quantityFilled"];
+            this.executedFee = _data["executedFee"];
+            this.valueFilled = _data["valueFilled"];
+            this.valueRemaining = _data["valueRemaining"];
+            this.status = _data["status"];
+            this.orderSide = _data["orderSide"];
         }
     }
 
@@ -349,9 +792,14 @@ export class TradeOrder implements ITradeOrder {
         data = typeof data === 'object' ? data : {};
         data["tradeOrderId"] = this.tradeOrderId;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["coinsCount"] = this.coinsCount;
-        data["actualPrice"] = this.actualPrice;
-        data["orderType"] = this.orderType;
+        data["actualAveragePrice"] = this.actualAveragePrice;
+        data["quantity"] = this.quantity;
+        data["quantityFilled"] = this.quantityFilled;
+        data["executedFee"] = this.executedFee;
+        data["valueFilled"] = this.valueFilled;
+        data["valueRemaining"] = this.valueRemaining;
+        data["status"] = this.status;
+        data["orderSide"] = this.orderSide;
         return data;
     }
 }
@@ -359,19 +807,38 @@ export class TradeOrder implements ITradeOrder {
 export interface ITradeOrder {
     tradeOrderId?: string;
     createdAt?: Date;
-    coinsCount?: number;
-    actualPrice?: number;
-    orderType?: OrderType;
+    actualAveragePrice?: number | undefined;
+    quantity?: number;
+    quantityFilled?: number | undefined;
+    executedFee?: number | undefined;
+    valueFilled?: number | undefined;
+    valueRemaining?: number | undefined;
+    status?: OrderStatus;
+    orderSide?: OrderSide;
 }
 
-export enum OrderType {
+export enum OrderStatus {
+    Created = 0,
+    New = 1,
+    Rejected = 2,
+    PartiallyFilled = 3,
+    PartiallyFilledCanceled = 4,
+    Filled = 5,
+    Cancelled = 6,
+    Untriggered = 7,
+    Triggered = 8,
+    Deactivated = 9,
+    Active = 10,
+}
+
+export enum OrderSide {
     Buy = 0,
     Sell = 1,
 }
 
 export class TradesTableDataQuery implements ITradesTableDataQuery {
     tradingPair?: string;
-    ordersType?: TradesTableOrderType;
+    tradeState?: TradeState | undefined;
     page?: number;
     pageSize?: number;
 
@@ -387,7 +854,7 @@ export class TradesTableDataQuery implements ITradesTableDataQuery {
     init(_data?: any) {
         if (_data) {
             this.tradingPair = _data["tradingPair"];
-            this.ordersType = _data["ordersType"];
+            this.tradeState = _data["tradeState"];
             this.page = _data["page"];
             this.pageSize = _data["pageSize"];
         }
@@ -403,7 +870,7 @@ export class TradesTableDataQuery implements ITradesTableDataQuery {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["tradingPair"] = this.tradingPair;
-        data["ordersType"] = this.ordersType;
+        data["tradeState"] = this.tradeState;
         data["page"] = this.page;
         data["pageSize"] = this.pageSize;
         return data;
@@ -412,15 +879,9 @@ export class TradesTableDataQuery implements ITradesTableDataQuery {
 
 export interface ITradesTableDataQuery {
     tradingPair?: string;
-    ordersType?: TradesTableOrderType;
+    tradeState?: TradeState | undefined;
     page?: number;
     pageSize?: number;
-}
-
-export enum TradesTableOrderType {
-    All = 0,
-    Opened = 1,
-    Closed = 2,
 }
 
 export class PagedDataOfObject implements IPagedDataOfObject {
@@ -520,6 +981,13 @@ export class TradeEventsTableDataQuery implements ITradeEventsTableDataQuery {
 export interface ITradeEventsTableDataQuery {
     page?: number;
     pageSize?: number;
+}
+
+export interface FileResponse {
+    data: Blob;
+    status: number;
+    fileName?: string;
+    headers?: { [name: string]: any };
 }
 
 export class SwaggerException extends Error {

@@ -23,7 +23,7 @@ public class TradeRepository : ITradeRepository
     public async Task<Trade?> GetCurrentTrade(string tradingPair)
     {
         return await _dbContext.Trades
-            .SingleOrDefaultAsync(t => t.TradingPair == tradingPair && t.Closed == false);
+            .SingleOrDefaultAsync(t => t.Symbol == tradingPair && t.State == TradeState.Opened);
     }
 
     public async Task Save(Trade trade)

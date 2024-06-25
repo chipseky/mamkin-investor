@@ -1,3 +1,4 @@
+using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Chipseky.MamkinInvestor.WebApi.Queries;
@@ -19,13 +20,16 @@ public class TradesTableDataQueryHandler
         var dbQuery = _dbContext.Trades.AsNoTracking();
 
         if (!string.IsNullOrEmpty(query.TradingPair))
-            dbQuery = dbQuery.Where(o => o.TradingPair == query.TradingPair);
+            dbQuery = dbQuery.Where(o => o.Symbol == query.TradingPair);
 
-        if (query.OrdersType == TradesTableOrderType.Closed)
-            throw new NotImplementedException(); 
-        
-        if (query.OrdersType == TradesTableOrderType.Opened)
-            throw new NotImplementedException();
+        dbQuery = query.TradeState switch
+        {
+            TradeState.Created => dbQuery.Where(o => o.State == TradeState.Created),
+            TradeState.Closed => dbQuery.Where(o => o.State == TradeState.Closed),
+            TradeState.Opened => dbQuery.Where(o => o.State == TradeState.Opened),
+            TradeState.Failed => dbQuery.Where(o => o.State == TradeState.Failed),
+            _ => dbQuery
+        };
 
         var total = await dbQuery.LongCountAsync();
         var trades = await dbQuery
@@ -35,11 +39,11 @@ public class TradesTableDataQueryHandler
             .Select(t => new TradesTableItem
             {
                 TradeId = t.TradeId,
-                TradingPair = t.TradingPair,
+                TradingPair = t.Symbol,
                 CreatedAt = t.CreatedAt,
                 HeldCoinsCount = t.HeldCoinsCount,
                 CurrentProfit = t.CurrentProfit,
-                Closed = t.Closed,
+                State = t.State,
                 Orders = t.History
             })
             .ToListAsync();

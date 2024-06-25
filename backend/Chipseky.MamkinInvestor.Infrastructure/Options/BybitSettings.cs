@@ -1,4 +1,4 @@
-namespace Chipseky.MamkinInvestor.WebApi.Options;
+namespace Chipseky.MamkinInvestor.Infrastructure.Options;
 
 public class BybitSettings
 {

@@ -2,12 +2,13 @@ namespace Chipseky.MamkinInvestor.Domain;
 
 public interface IOrdersApi
 {
-    Task<PlaceOrderResult> PlaceBuyOrder(string tradingPair, decimal coinsAmount);
-    Task<PlaceOrderResult> PlaceSellOrder(string tradingPair, decimal coinsAmount);
+    Task<PlaceOrderResult> PlaceBuyOrder(string symbol, decimal quantity, string clientOrderId);
+    Task<PlaceOrderResult> PlaceSellOrder(string symbol, decimal quantity, string clientOrderId);
+    Task<TradeOrder> GetOrder(string orderId);
 }
 
-public record PlaceOrderResult(bool Succeeded, decimal ActualPrice, decimal CoinsCount, string? ErrorReason = null)
+public record PlaceOrderResult(bool Succeeded, string? OrderId, string? Error = null)
 {
-    public static PlaceOrderResult Success(decimal actualPrice, decimal coinsCount) => new(true, coinsCount, actualPrice);
-    public static PlaceOrderResult Fail(string errorReason) => new(false, -1, -1, errorReason);
+    public static PlaceOrderResult Success(string orderId) => new(true, orderId);
+    public static PlaceOrderResult Fail(string? error) => new(false, null,  error);
 }

@@ -1,9 +1,5 @@
-using Bybit.Net;
-using Bybit.Net.Clients;
-using Chipseky.MamkinInvestor.WebApi.Options;
-using CryptoExchange.Net.Authentication;
+using Chipseky.MamkinInvestor.Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace Chipseky.MamkinInvestor.WebApi.Controllers;
 
@@ -11,21 +7,11 @@ namespace Chipseky.MamkinInvestor.WebApi.Controllers;
 public class SystemController : ControllerBase
 {
     [HttpGet("/api/test")]
-    public async Task<IActionResult> Test(IOptions<BybitSettings> bybitSettings)
+    public async Task<IActionResult> Test(IOrdersApi ordersApi)
     {
-        var bybitClient = new BybitRestClient(options =>
-        {
-            options.Environment = BybitEnvironment.Testnet;
-            options.ApiCredentials = new ApiCredentials(bybitSettings.Value.ApiKey, bybitSettings.Value.ApiSecret);
-        });
-        
-        // var tt = await bybitClient.V5Api.Trading.PlaceOrderAsync(
-        //     category: Category.Spot,
-        //     symbol: "BTCUSD",
-        //     side: OrderSide.Buy,
-        //     type: NewOrderType.Market,
-        //     quantity: 1);
-
+        // await ordersApi.PlaceSellOrder("BTCUSDT", 0.00622377m, Guid.NewGuid().ToString());
+        var order = await ordersApi.GetOrder("1719081799784950016");
+        // var result = await ordersApi.PlaceSellOrder("BTCUSDT", 0.0001676m, Guid.NewGuid().ToString());
         return Ok();
     }
     

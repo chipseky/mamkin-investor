@@ -5,6 +5,7 @@ using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240628080507_AddTradeStateField")]
+    partial class AddTradeStateField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,10 +41,6 @@ namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
                     b.Property<decimal>("CurrentProfit")
                         .HasColumnType("numeric")
                         .HasColumnName("current_profit");
-
-                    b.Property<string>("FailReason")
-                        .HasColumnType("text")
-                        .HasColumnName("fail_reason");
 
                     b.Property<decimal>("HeldCoinsCount")
                         .HasColumnType("numeric")

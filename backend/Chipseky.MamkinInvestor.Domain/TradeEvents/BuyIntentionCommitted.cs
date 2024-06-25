@@ -2,14 +2,17 @@ namespace Chipseky.MamkinInvestor.Domain.TradeEvents;
 
 public class BuyIntentionCommitted : TradeEvent
 {
-    public decimal CoinsCount { get; private set; }
-    public decimal ActualPrice { get; private set; }
+    public decimal UsdtQuantity { get; private set; }
+    public decimal ExpectedPrice { get; private set; }
+    public string OrderId { get; private set; }
     
     private BuyIntentionCommitted() {}
 
-    public BuyIntentionCommitted(Guid tradeId, decimal coinsCount, decimal actualPrice) : base(tradeId)
+    public BuyIntentionCommitted(Guid tradeId, string orderId, decimal usdtQuantity, decimal expectedPrice) 
+        : base(tradeId)
     {
-        CoinsCount = coinsCount;
-        ActualPrice = actualPrice;
+        OrderId = orderId;
+        UsdtQuantity = usdtQuantity;
+        ExpectedPrice = expectedPrice;
     }
 }

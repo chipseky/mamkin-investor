@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chipseky.MamkinInvestor.Dom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chipseky.MamkinInvestor.Tests", "Chipseky.MamkinInvestor.Tests\Chipseky.MamkinInvestor.Tests.csproj", "{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chipseky.MamkinInvestor.Infrastructure", "Chipseky.MamkinInvestor.Infrastructure\Chipseky.MamkinInvestor.Infrastructure.csproj", "{07E415AD-2630-4EC5-A1D7-AEB24DDEE741}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBF18E6F-5BF7-41B8-95D0-060D76E47FA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E415AD-2630-4EC5-A1D7-AEB24DDEE741}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E415AD-2630-4EC5-A1D7-AEB24DDEE741}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E415AD-2630-4EC5-A1D7-AEB24DDEE741}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E415AD-2630-4EC5-A1D7-AEB24DDEE741}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
