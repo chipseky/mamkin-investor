@@ -6,86 +6,89 @@ namespace Chipseky.MamkinInvestor.Domain;
 
 public class TradeEventsHandler
 {
-    private readonly ITradeRepository _tradeRepository;
+    private readonly ITradesRepository _tradesRepository;
     private readonly IOrdersApi _ordersApi;
     private readonly ILogger<TradeEventsHandler> _logger;
 
     public TradeEventsHandler(
-        ITradeRepository tradeRepository, 
-        ILogger<TradeEventsHandler> logger, IOrdersApi ordersApi)
+        ITradesRepository tradesRepository, 
+        IOrdersApi ordersApi, 
+        ILogger<TradeEventsHandler> logger)
     {
-        _tradeRepository = tradeRepository;
-        _logger = logger;
+        _tradesRepository = tradesRepository;
         _ordersApi = ordersApi;
+        _logger = logger;
     }
 
     public async Task Handle(object tradeEvent)
     {
         switch (tradeEvent)
         {
-            case BuyIntentionCreated intentionEvent:
-            {
-                var trade = await _tradeRepository.Get(intentionEvent.TradeId);
-                if (trade != null)
-                    return;
-            
-                await _tradeRepository.Save(Trade.Create(intentionEvent.TradeId, intentionEvent.TradingPair));
-                break;
-            }
             case BuyIntentionCommitted committedEvent:
             {
-                var trade = await _tradeRepository.Get(committedEvent.TradeId);
-                if (trade == null)
-                    PostponeEventHandling($"Trade with {committedEvent.TradeId} not found.");
+                var trade = await _tradesRepository.Get(committedEvent.TradeId);
+
+                if (trade.State != TradeState.Created)
+                {
+                    _logger.LogWarning($"Warning! Trade id {trade.TradeId}, trade status {trade.State}, {nameof(BuyIntentionCommitted)}");
+                    break;
+                }
 
                 var tradeOrder = await _ordersApi.GetOrder(committedEvent.OrderId);
-               
-                //todo: order can be canceled
-                trade!.Open(tradeOrder);
+                
+                if(tradeOrder == null)
+                    trade.MarkFailed(
+                        eventType: nameof(SellIntentionCommitted), 
+                        reason: null,
+                        orderId: committedEvent.OrderId);
+                else
+                    //todo: order can be canceled
+                    trade.Open(tradeOrder);
 
-                await _tradeRepository.Save(trade);
+                await _tradesRepository.Save(trade);
                 break;
             }
             case BuyIntentionFailed failedEvent:
             {
-                var trade = await _tradeRepository.Get(failedEvent.TradeId);
-                if (trade == null)
-                    PostponeEventHandling($"Trade with {failedEvent.TradeId} not found.");
+                var trade = await _tradesRepository.Get(failedEvent.TradeId);
 
-                trade!.MarkFailed(nameof(BuyIntentionFailed), failedEvent.Reason, failedEvent.OrderId);
+                trade.MarkFailed(nameof(BuyIntentionFailed), failedEvent.Reason, failedEvent.OrderId);
                 
-                await _tradeRepository.Save(trade);
+                await _tradesRepository.Save(trade);
                 break;
             }
             case SellIntentionCommitted committedEvent:
             {
-                var trade = await _tradeRepository.Get(committedEvent.TradeId);
-                if (trade == null)
-                    PostponeEventHandling($"Trade with {committedEvent.TradeId} not found. Event: {nameof(SellIntentionCommitted)}");
+                var trade = await _tradesRepository.Get(committedEvent.TradeId);
                 
                 var tradeOrder = await _ordersApi.GetOrder(committedEvent.OrderId);
-                
-                trade!.Close(tradeOrder);
 
-                await _tradeRepository.Save(trade);
+                if (trade.State!= TradeState.IsSold)
+                {
+                    _logger.LogWarning($"Warning! Trade id {trade.TradeId}, trade status {trade.State}, {nameof(SellIntentionCommitted)}");
+                    break;
+                }
+                
+                if(tradeOrder == null)
+                    trade.MarkFailed(
+                        eventType: nameof(SellIntentionCommitted), 
+                        reason: null,
+                        orderId: committedEvent.OrderId);
+                else
+                    trade.Close(tradeOrder);
+
+                await _tradesRepository.Save(trade);
                 break;
             }
             case SellIntentionFailed failedEvent:
             {
-                var trade = await _tradeRepository.Get(failedEvent.TradeId);
-                if (trade == null)
-                    PostponeEventHandling($"Trade with {failedEvent.TradeId} not found.");
+                var trade = await _tradesRepository.Get(failedEvent.TradeId);
 
-                trade!.MarkFailed(nameof(SellIntentionFailed), failedEvent.Reason, failedEvent.OrderId);
+                trade.MarkFailed(nameof(SellIntentionFailed), failedEvent.Reason, failedEvent.OrderId);
 
-                await _tradeRepository.Save(trade);
+                await _tradesRepository.Save(trade);
                 break;
             }
         }
-    }
-
-    private void PostponeEventHandling(string reason)
-    {
-        throw new InvalidDataException($"Delay attempt. Reason: {reason}");
     }
 }

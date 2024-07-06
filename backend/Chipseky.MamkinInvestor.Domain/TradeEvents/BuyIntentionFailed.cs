@@ -6,9 +6,10 @@ public class BuyIntentionFailed : TradeEvent
     
     public string? OrderId { get; private set; }
     
+    // ReSharper disable once UnusedMember.Local
     private BuyIntentionFailed() {}
 
-    public BuyIntentionFailed(Guid tradeId, string? orderId, string reason): base(tradeId)
+    public BuyIntentionFailed(Guid tradeId, string? orderId, string? reason): base(tradeId)
     {
         OrderId = orderId;
         Reason = reason;

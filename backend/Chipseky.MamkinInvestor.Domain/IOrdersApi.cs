@@ -4,7 +4,7 @@ public interface IOrdersApi
 {
     Task<PlaceOrderResult> PlaceBuyOrder(string symbol, decimal quantity, string clientOrderId);
     Task<PlaceOrderResult> PlaceSellOrder(string symbol, decimal quantity, string clientOrderId);
-    Task<TradeOrder> GetOrder(string orderId);
+    Task<TradeOrder?> GetOrder(string orderId);
 }
 
 public record PlaceOrderResult(bool Succeeded, string? OrderId, string? Error = null)

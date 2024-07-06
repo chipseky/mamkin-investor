@@ -2,19 +2,19 @@ namespace Chipseky.MamkinInvestor.Domain.TradeEvents;
 
 public class BuyIntentionCreated : TradeEvent
 {
-    public string TradingPair { get; private set; }
+    public string Symbol { get; private set; }
     public decimal UsdtQuantity { get; private set; }
     public decimal ExpectedPrice { get; private set; }
     
     private BuyIntentionCreated() : base() {}
 
     public BuyIntentionCreated(
-        string tradingPair,
+        string symbol,
         Guid tradeId, 
         decimal usdtQuantity, 
         decimal expectedPrice) : base(tradeId)
     {
-        TradingPair = tradingPair;
+        Symbol = symbol;
         UsdtQuantity = usdtQuantity;
         ExpectedPrice = expectedPrice;
     }

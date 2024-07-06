@@ -1,4 +1,4 @@
-using Chipseky.MamkinInvestor.Domain;
+using Chipseky.MamkinInvestor.Domain.Repositories;
 using Chipseky.MamkinInvestor.WebApi.Queries;
 using Chipseky.MamkinInvestor.WebApi.QueryHandlers;
 using Microsoft.AspNetCore.Mvc;
@@ -32,8 +32,8 @@ public class TradesController : ControllerBase
 
     [HttpGet("/api/trades/profit")]
     [ProducesResponseType<string>(200)]
-    public async Task<IActionResult> CalcProfit([FromServices] OrdersManager ordersManager)
+    public async Task<IActionResult> CalcProfit([FromServices] ITradesRepository tradesRepository, CancellationToken cancellationToken)
     {
-        return Ok($"your profit is approximately {await ordersManager.CalcProfit()}$");
+        return Ok($"your profit is approximately {await tradesRepository.GetProfit(cancellationToken)}$");
     }
 }

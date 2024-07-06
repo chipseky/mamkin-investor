@@ -9,16 +9,16 @@ using Microsoft.Extensions.Options;
 
 namespace Chipseky.MamkinInvestor.Infrastructure;
 
-public class OrdersApi : IOrdersApi
+public class BybitOrdersApi : IOrdersApi
 {
-    private readonly ILogger<OrdersApi> _logger;
+    private readonly ILogger<BybitOrdersApi> _logger;
     private readonly IOptions<BybitSettings> _bybitSettings;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly LotSizeFilterService _lotSizeFilterService;
 
-    public OrdersApi(
+    public BybitOrdersApi(
         IOptions<BybitSettings> bybitSettings, 
-        ILogger<OrdersApi> logger,
+        ILogger<BybitOrdersApi> logger,
         IHttpClientFactory httpClientFactory,
         LotSizeFilterService lotSizeFilterService)
     {
@@ -96,7 +96,7 @@ public class OrdersApi : IOrdersApi
         }
     }
 
-    public async Task<TradeOrder> GetOrder(string orderId)
+    public async Task<TradeOrder?> GetOrder(string orderId)
     {
         BybitRestClient? bybitClient = null;
         try
@@ -111,7 +111,7 @@ public class OrdersApi : IOrdersApi
             {
                 var order = response.Data.List.First();
                 
-                return  TradeOrder.Create(
+                return TradeOrder.Create(
                     tradeOrderId: order.OrderId,
                     actualAveragePrice: order.AveragePrice,
                     quantity: order.Quantity,
@@ -119,20 +119,15 @@ public class OrdersApi : IOrdersApi
                     executedFee: order.ExecutedFee,
                     valueFilled: order.ValueFilled,
                     valueRemaining: order.ValueRemaining,
-                    status: MapOrderStatus(order.Status),
-                    orderSide: MapOrderSide(order.Side)
+                    status: BybitOrderStatusMapper.MapOrderStatus(order.Status),
+                    orderSide: BybitOrderStatusMapper.MapOrderSide(order.Side)
                 );
             }            
             else
             {
-                _logger.LogError(response.Error?.ToString());
+                _logger.LogError("cannot get order, id {orderId}. Reason: {reason}", orderId, response.Error?.ToString());
                 return null;
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "PlaceBuyOrder error.");
-            return null;
         }
         finally
         {
@@ -152,34 +147,5 @@ public class OrdersApi : IOrdersApi
             loggerFactory: null);
         
         return bybitClient;
-    }
-
-    private Domain.OrderStatus MapOrderStatus(Bybit.Net.Enums.V5.OrderStatus bybitOrderStatus)
-    {
-        return bybitOrderStatus switch
-        {
-            Bybit.Net.Enums.V5.OrderStatus.Cancelled => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.Created => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.Rejected => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.New => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.PartiallyFilled => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.Filled => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.PartiallyFilledCanceled => Domain.OrderStatus.Cancelled,
-            Bybit.Net.Enums.V5.OrderStatus.Untriggered => Domain.OrderStatus.Untriggered,
-            Bybit.Net.Enums.V5.OrderStatus.Triggered => Domain.OrderStatus.Triggered,
-            Bybit.Net.Enums.V5.OrderStatus.Deactivated => Domain.OrderStatus.Deactivated,
-            Bybit.Net.Enums.V5.OrderStatus.Active => Domain.OrderStatus.Active,
-            _ => throw new ArgumentOutOfRangeException(nameof(bybitOrderStatus), bybitOrderStatus, null)
-        };
-    }
-
-    private Domain.OrderSide MapOrderSide(Bybit.Net.Enums.OrderSide orderSide)
-    {
-        return orderSide switch
-        {
-            Bybit.Net.Enums.OrderSide.Buy => Domain.OrderSide.Buy,
-            Bybit.Net.Enums.OrderSide.Sell => Domain.OrderSide.Sell,
-            _ => throw new ArgumentOutOfRangeException(nameof(orderSide), orderSide, null)
-        };
     }
 }

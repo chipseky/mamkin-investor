@@ -19,7 +19,7 @@ public class HotCoinsService
         _apiSecret = options.Value.ApiSecret;
     }
 
-    public async Task<Dictionary<string, TradingPairPriceChange>> GetTop10TradingPairs()
+    public async Task<Dictionary<string, SymbolPriceChange>> GetTop10TradingPairs()
     {
         var bybitClient = new BybitRestClient(
             httpClient: _httpClientFactory.CreateClient("bybit_client"),
@@ -37,7 +37,7 @@ public class HotCoinsService
             .Take(10)
             .ToDictionary(
                 t => t.Symbol,
-                t => new TradingPairPriceChange(
+                t => new SymbolPriceChange(
                     PriceChangePercentage24H: t.PriceChangePercentag24h,
                     LastPrice: t.LastPrice));
 

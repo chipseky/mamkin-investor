@@ -1,10 +1,9 @@
-using Bybit.Net;
 using Bybit.Net.Clients;
 using Bybit.Net.Objects.Models.V5;
 using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.Infrastructure.Options;
 using CryptoExchange.Net.Authentication;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -15,18 +14,18 @@ public class LotSizeFilterService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptions<BybitSettings> _bybitSettings;
     private readonly ILogger<LotSizeFilterService> _logger;
-    private readonly IMemoryCache _memoryCache;
+    private readonly IDistributedCache _cache;
 
     public LotSizeFilterService(
         IHttpClientFactory httpClientFactory, 
         IOptions<BybitSettings> bybitSettings, 
         ILogger<LotSizeFilterService> logger, 
-        IMemoryCache memoryCache)
+        IDistributedCache cache)
     {
         _httpClientFactory = httpClientFactory;
         _bybitSettings = bybitSettings;
         _logger = logger;
-        _memoryCache = memoryCache;
+        _cache = cache;
     }
 
     public async Task<decimal> CorrectQuantity(string symbol, decimal quantity)
@@ -43,8 +42,8 @@ public class LotSizeFilterService
 
     private async Task<BybitSpotLotSizeFilter> GetLotSizeFilter(string symbol)
     {
-        var lotSizeFilter = _memoryCache.Get<BybitSpotLotSizeFilter>(symbol);
-
+        var lotSizeFilter = await _cache.GetValue<BybitSpotLotSizeFilter>(symbol, CancellationToken.None);
+        
         if (lotSizeFilter != null)
             return lotSizeFilter;
 
@@ -64,9 +63,12 @@ public class LotSizeFilterService
                 _logger.LogError(response.Error?.Message);
                 throw new InvalidOperationException($"Cannot read instruments info. Symbol is {symbol}");
             }
-
-            _memoryCache.Set(symbol, lotSizeFilter, DateTimeOffset.UtcNow.AddHours(1));
-
+            
+            await _cache.SetValue(
+                key: symbol, 
+                value: lotSizeFilter, 
+                options: new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }, 
+                cancellationToken: CancellationToken.None);
         }
         finally
         {
@@ -82,7 +84,7 @@ public class LotSizeFilterService
             httpClient: _httpClientFactory.CreateClient("bybit_client"),
             optionsDelegate: options =>
             {
-                options.Environment = BybitEnvironment.Testnet;
+                // options.Environment = BybitEnvironment.Testnet;
                 options.ApiCredentials = new ApiCredentials(_bybitSettings.Value.ApiKey, _bybitSettings.Value.ApiSecret);
             },
             loggerFactory: null);

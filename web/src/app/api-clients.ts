@@ -741,8 +741,9 @@ export interface ITradesTableItem {
 export enum TradeState {
     Created = 0,
     Opened = 1,
-    Closed = 2,
-    Failed = 3,
+    IsSold = 2,
+    Closed = 3,
+    Failed = 4,
 }
 
 export class TradeOrder implements ITradeOrder {

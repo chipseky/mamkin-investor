@@ -4,7 +4,7 @@ namespace Chipseky.MamkinInvestor.WebApi.Extensions;
 
 public static class TradingPairsHelper
 {
-    public static string GetAsString(this Dictionary<string, TradingPairPriceChange> tradingPairs)
+    public static string GetAsString(this Dictionary<string, SymbolPriceChange> tradingPairs)
     {
         var tradingPairsStrings = tradingPairs
             .Select(t

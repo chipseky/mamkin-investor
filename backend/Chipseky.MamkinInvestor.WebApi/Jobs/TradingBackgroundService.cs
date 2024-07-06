@@ -39,15 +39,15 @@ public class TradingBackgroundService : BackgroundService
                 var trader = scope.ServiceProvider.GetRequiredService<Trader>();
                 var hotCoinsService = scope.ServiceProvider.GetRequiredService<HotCoinsService>();
 
-                var top10HotTradingPairs = await hotCoinsService.GetTop10TradingPairs();
+                var top10HotCoins = await hotCoinsService.GetTop10TradingPairs();
 
-                await trader.Feed(top10HotTradingPairs);
+                await trader.Feed(top10HotCoins);
 
                 var botClient = GetBotClient(scope);
 
                 await botClient.SendTextMessageAsync(
                     _chatId,
-                    top10HotTradingPairs.GetAsString(),
+                    top10HotCoins.GetAsString(),
                     cancellationToken: stoppingToken
                 );
             }

@@ -1,4 +1,5 @@
 using Chipseky.MamkinInvestor.Domain;
+using Chipseky.MamkinInvestor.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chipseky.MamkinInvestor.WebApi.Controllers;
@@ -7,11 +8,13 @@ namespace Chipseky.MamkinInvestor.WebApi.Controllers;
 public class SystemController : ControllerBase
 {
     [HttpGet("/api/test")]
-    public async Task<IActionResult> Test(IOrdersApi ordersApi)
+    public async Task<IActionResult> Test(BybitOrdersApi ordersApi)
     {
-        // await ordersApi.PlaceSellOrder("BTCUSDT", 0.00622377m, Guid.NewGuid().ToString());
-        var order = await ordersApi.GetOrder("1719081799784950016");
-        // var result = await ordersApi.PlaceSellOrder("BTCUSDT", 0.0001676m, Guid.NewGuid().ToString());
+        var buyOrderRequest = await ordersApi.PlaceBuyOrder("BTCUSDT", 20m, Guid.NewGuid().ToString());
+        var buyOrder = await ordersApi.GetOrder(buyOrderRequest.OrderId!);
+        
+        var sellOrderRequest = await ordersApi.PlaceSellOrder("BTCUSDT", 0.00016227m, Guid.NewGuid().ToString());
+        var sellOrder = await ordersApi.GetOrder(sellOrderRequest.OrderId!);
         return Ok();
     }
     

@@ -22,6 +22,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["ConnectionStrings:Redis"];
+});
+
 builder.Services.AddHttpClient("tg_bot_client")
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
     {
@@ -56,17 +61,17 @@ builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("T
 builder.Services.Configure<BybitSettings>(builder.Configuration.GetSection("Bybit"));
 builder.Services.Configure<TradingBackgroundServiceSettings>(builder.Configuration.GetSection("TradingBackgroundServiceSettings"));
 
-builder.Services.AddMemoryCache();
-
-builder.Services.AddSingleton<TradingPairsManager>();
 builder.Services.AddScoped<HotCoinsService>();
-builder.Services.AddScoped<IOrdersApi, OrdersApi>();
+// builder.Services.AddScoped<IOrdersApi, BybitOrdersApi>();
+builder.Services.AddScoped<IOrdersApi, MockOrdersApi>();
+builder.Services.AddScoped<BybitOrdersApi>();
 builder.Services.AddScoped<OrdersManager>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
-builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
+builder.Services.AddScoped<IRealAdviser, RealAdviser>();
 builder.Services.AddScoped<Trader>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();
 builder.Services.AddHostedService<TradingBackgroundService>();
+builder.Services.AddHostedService<TradesWatcherBackgroundService>();
 
 builder.Services.Configure<PostgresReplicationServiceOptions>(o =>
 {
@@ -80,7 +85,7 @@ builder.Services.AddHostedService<PostgresReplicationListener>();
 builder.Services.AddScoped<TradesTableDataQueryHandler>();
 builder.Services.AddScoped<TradeEventsTableDataQueryHandler>();
 
-builder.Services.AddScoped<ITradeRepository, TradeRepository>();
+builder.Services.AddScoped<ITradesRepository, TradesRepository>();
 builder.Services.AddScoped<TradeEventsHandler>();
 
 builder.Services.AddScoped<LotSizeFilterService>();

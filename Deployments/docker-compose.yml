@@ -43,3 +43,9 @@ services:
       - --max_wal_senders=10
       - --max_replication_slots=10
     restart: always
+  redis:
+    image: redis:5.0.3-alpine
+    command: [ "redis-server", "--appendonly", "no", "--save", "" ]
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: always

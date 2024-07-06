@@ -6,53 +6,36 @@ public class Trader
 {
     private readonly OrdersManager _ordersManager;
 
-    private readonly TradingPairsManager _tradingPairsManager;
-    private readonly ITradeRepository _tradeRepository;
-    private readonly Adviser _adviser = new();
+    private readonly ITradesRepository _tradesRepository;
+    private readonly IRealAdviser _realAdviser;
 
-    public Trader(OrdersManager ordersManager, TradingPairsManager tradingPairsManager, ITradeRepository tradeRepository)
+    public Trader(OrdersManager ordersManager, ITradesRepository tradesRepository, IRealAdviser realAdviser)
     {
         _ordersManager = ordersManager;
-        _tradingPairsManager = tradingPairsManager;
-        _tradeRepository = tradeRepository;
+        _tradesRepository = tradesRepository;
+        _realAdviser = realAdviser;
     }
 
-    public async Task Feed(IDictionary<string, TradingPairPriceChange> marketData)
+    public async Task Feed(IDictionary<string, SymbolPriceChange> marketData)
     {
-        _tradingPairsManager.Update(marketData);
-
-        foreach (var tradingPair in _tradingPairsManager.TradingPairs)
+        foreach (var symbol in marketData)
         {
-            var advice = _adviser.GiveAdvice(tradingPair.Value);
-
-            switch (advice)
-            {
-                case Advice.Buy:
-                    var symbolAlreadyHeld = await _tradeRepository.GetCurrentTrade(tradingPair.Key) != null;
-                    if (symbolAlreadyHeld)
-                        return;
-
-                    var usdtQuantity = GetUsdtQuantity(tradingPair.Key);
-                    await _ordersManager.CreateBuyOrder(tradingPair.Key, usdtQuantity,
-                        tradingPair.Value.LastPriceChange.LastPrice);
-                    break;
-                case Advice.Sell:
-                    var dontHaveOpenedTrades = await _tradeRepository.GetCurrentTrade(tradingPair.Key) == null;
-                    if (dontHaveOpenedTrades)
-                        return;
-
-                    await _ordersManager.CreateSellOrder(tradingPair.Key, tradingPair.Value.LastPriceChange.LastPrice);
-                    break;
-                case Advice.DoNothing:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var openedTrade = await _tradesRepository.GetActiveTrade(symbol.Key);
+            if (openedTrade != null)
+                continue;
+            
+            var shouldBuy = await _realAdviser.ShouldBuy(symbol.Key);
+            if (!shouldBuy) continue;
+            
+            var usdtQuantity = GetUsdtQuantity(symbol.Key);
+            await _ordersManager.CreateBuyOrder(
+                symbol:symbol.Key, 
+                usdtQuantity: usdtQuantity,
+                expectedCoinPrice: symbol.Value.LastPrice);
         }
-
-        _tradingPairsManager.CleanUp();
     }
 
+    // ReSharper disable once UnusedParameter.Local
     private int GetUsdtQuantity(string symbol)
     {
         //todo: use LotSizeFilterService 

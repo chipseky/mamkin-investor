@@ -45,19 +45,21 @@ public class Trade
             throw new InvalidOperationException();
         
         State = TradeState.Opened;
-        HeldCoinsCount = tradeOrder.QuantityFilled!.Value;
+        HeldCoinsCount = tradeOrder.QuantityFilled ?? 0;
+        CurrentProfit = -tradeOrder.ValueFilled ?? 0;
         UpdatedAt = DateTime.UtcNow;
         _history.Add(tradeOrder);
     }
     
     public void Close(TradeOrder tradeOrder)
     {
-        if (State != TradeState.Opened)
+        if (State != TradeState.IsSold)
             throw new InvalidOperationException();
         
         if(tradeOrder.OrderSide != OrderSide.Sell)
             throw new InvalidOperationException();
-        
+
+        CurrentProfit += tradeOrder.ValueFilled ?? 0;
         State = TradeState.Closed;
         // HeldCoinsCount = tradeOrder.QuantityFilled!.Value;
         UpdatedAt = DateTime.UtcNow;
@@ -73,12 +75,22 @@ public class Trade
         UpdatedAt = DateTime.UtcNow;
         FailReason = $"Source: {eventType}. Order id: {orderId ?? "undefined"}. Reason: {reason ?? "undefined"}";
     }
+
+    public void MarkSold()
+    {
+        if (State != TradeState.Opened)
+            throw new InvalidOperationException();
+        
+        State = TradeState.IsSold;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
 
 public enum TradeState
 {
     Created,
     Opened,
+    IsSold,
     Closed,
     Failed
 }
