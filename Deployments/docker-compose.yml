@@ -13,6 +13,8 @@ services:
     image: chipseky/mamkin-investor:0.0.42
     environment:
       - ConnectionStrings__MamkinInvestorDatabase=Host=postgresdb;Port=5432;Database=mamkin-investor;Username=${DB_USERNAME:-xxx};Password=${DB_PASSWORD:-xxx};
+      - ConnectionStrings__Adviser=${ADVISER_API:-http://localhost:5678}
+      - ConnectionStrings__Redis=${REDIS_ADDRESS:-localhost:6379}
       - Bybit__ApiKey=${BYBIT_API_KEY:-xxx}
       - Bybit__ApiSecret=${BYBIT_API_SECRET:-xxx}
       - Telegram__BotAccessToken=${TG_BOT_ACCESS_TOKEN:-xxx}
@@ -23,6 +25,7 @@ services:
       - 5555:8080
     depends_on: 
       - postgresdb
+      - redis
     restart: always
   postgresdb:
     image: postgres:15.3-alpine
@@ -47,5 +50,5 @@ services:
     image: redis:5.0.3-alpine
     command: [ "redis-server", "--appendonly", "no", "--save", "" ]
     ports:
-      - "127.0.0.1:6379:6379"
+      - 6379:6379
     restart: always

@@ -48,6 +48,14 @@ builder.Services.AddHttpClient("bybit_client")
     })
     .SetHandlerLifetime(Timeout.InfiniteTimeSpan); // Disable rotation, as it is handled by PooledConnectionLifetime
 
+builder.Services.AddHttpClient<IRealAdviser, RealAdviser>("adviser_client", client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["ConnectionStrings:Adviser"]!);
+        client.DefaultRequestHeaders.Add("Accept", "application/json");
+    })
+    .AddPolicyHandler((sp, _) => RetryPoliceHelper.GetRetryPolicy(sp.GetService<ILoggerFactory>()!));
+
+
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("MamkinInvestorDatabase"));
 dataSourceBuilder.EnableDynamicJson();
 var dataSource = dataSourceBuilder.Build();
@@ -67,7 +75,6 @@ builder.Services.AddScoped<IOrdersApi, MockOrdersApi>();
 builder.Services.AddScoped<BybitOrdersApi>();
 builder.Services.AddScoped<OrdersManager>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
-builder.Services.AddScoped<IRealAdviser, RealAdviser>();
 builder.Services.AddScoped<Trader>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();
 builder.Services.AddHostedService<TradingBackgroundService>();
