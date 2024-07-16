@@ -29,8 +29,18 @@ public class TradesWatcherBackgroundService : BackgroundService
             {
                 var openTrades = await tradesRepository.GetOpenTrades(stoppingToken);
                 foreach (var openTrade in openTrades)
-                    if (await realAdviser.ShouldSell(openTrade.Symbol))
-                        await ordersManager.CreateSellOrder(openTrade);
+                {
+                    if (openTrade.ForecastedSellDate.HasValue)
+                    {
+                        if (openTrade.ForecastedSellDate <= DateTime.UtcNow)
+                            await ordersManager.CreateSellOrder(openTrade);
+                    }
+                    else
+                    {
+                        if (await realAdviser.ShouldSell(openTrade.Symbol))
+                            await ordersManager.CreateSellOrder(openTrade);
+                    }
+                }
             }
             catch (Exception ex)
             {

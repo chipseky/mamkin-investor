@@ -84,10 +84,10 @@ public class TelegramBotBackgroundService : BackgroundService
 
                     using var scope = _serviceScopeFactory.CreateScope();
                     
-                    var hotCoinsService =
-                        scope.ServiceProvider.GetRequiredService<HotCoinsService>();
+                    var marketDataService =
+                        scope.ServiceProvider.GetRequiredService<MarketDataService>();
 
-                    var top10TradingPairs = await hotCoinsService.GetTop10TradingPairs();
+                    var top10TradingPairs = await marketDataService.Get10HotSymbols();
                     
                     var messageText = message.Text is "делай" or "покажи"
                         ? top10TradingPairs.GetAsString()

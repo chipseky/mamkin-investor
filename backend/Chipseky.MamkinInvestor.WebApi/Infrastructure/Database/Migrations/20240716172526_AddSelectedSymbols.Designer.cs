@@ -5,6 +5,7 @@ using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240716172526_AddSelectedSymbols")]
+    partial class AddSelectedSymbols
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,16 +27,12 @@ namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Chipseky.MamkinInvestor.Domain.PredefinedSymbol", b =>
+            modelBuilder.Entity("Chipseky.MamkinInvestor.Domain.SelectedSymbol", b =>
                 {
                     b.Property<string>("Symbol")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("symbol");
-
-                    b.Property<TimeSpan?>("ForecastedSellOffset")
-                        .HasColumnType("interval")
-                        .HasColumnName("forecasted_sell_offset");
 
                     b.HasKey("Symbol")
                         .HasName("pk_selected_symbols");
@@ -59,10 +58,6 @@ namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database.Migrations
                     b.Property<string>("FailReason")
                         .HasColumnType("text")
                         .HasColumnName("fail_reason");
-
-                    b.Property<DateTime?>("ForecastedSellDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("forecasted_sell_date");
 
                     b.Property<decimal>("HeldCoinsCount")
                         .HasColumnType("numeric")

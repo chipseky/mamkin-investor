@@ -18,6 +18,14 @@ public class SystemController : ControllerBase
         return Ok();
     }
     
+    [HttpGet("/api/tickers")]
+    public async Task<IActionResult> GetTickers(BybitHistoryApi historyApi)
+    {
+        await historyApi.GetTicker();
+        
+        return Ok();
+    }
+    
     [HttpGet("/api/ping")]
     public IActionResult Ping()
     {

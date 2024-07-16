@@ -9,18 +9,21 @@ public class OrdersManager
     private readonly IOrdersApi _ordersApi;
     private readonly ITradeEventsRepository _tradeEventsRepository;
     private readonly ITradesRepository _tradesRepository;
+    private readonly IPredefinedSymbolsRepository _predefinedSymbolsRepository;
     private readonly ILogger<OrdersManager> _logger;
 
     public OrdersManager(
         IOrdersApi ordersApi,
         ITradeEventsRepository tradeEventsRepository,
         ITradesRepository tradesRepository,
-        ILogger<OrdersManager> logger)
+        ILogger<OrdersManager> logger, 
+        IPredefinedSymbolsRepository predefinedSymbolsRepository)
     {
         _ordersApi = ordersApi;
         _tradeEventsRepository = tradeEventsRepository;
         _tradesRepository = tradesRepository;
         _logger = logger;
+        _predefinedSymbolsRepository = predefinedSymbolsRepository;
     }
 
     public async Task CreateBuyOrder(string symbol, decimal usdtQuantity, decimal expectedCoinPrice)
@@ -29,7 +32,8 @@ public class OrdersManager
 
         try
         {
-            await _tradesRepository.Save(Trade.Create(tradeId, symbol));
+            var sellOffset = await _predefinedSymbolsRepository.GetForecastedSellOffset(symbol);
+            await _tradesRepository.Save(Trade.Create(tradeId, symbol, sellOffset));
 
             var buyIntentionCreatedEvent = new BuyIntentionCreated(symbol, tradeId, usdtQuantity, expectedCoinPrice);
             await _tradeEventsRepository.Store(buyIntentionCreatedEvent);

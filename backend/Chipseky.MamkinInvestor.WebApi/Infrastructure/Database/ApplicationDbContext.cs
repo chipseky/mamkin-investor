@@ -1,5 +1,6 @@
 using Chipseky.MamkinInvestor.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 
@@ -7,6 +8,8 @@ public class ApplicationDbContext : DbContext
 {
     public DbSet<Trade> Trades { get; set; }
     public DbSet<DbTradeEvent> TradeEvents { get; set; }
+    
+    public DbSet<PredefinedSymbol> PredefinedSymbols { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -32,6 +35,15 @@ public class ApplicationDbContext : DbContext
             builder.HasKey(t => t.TradeId);
             builder.Property(t => t.History).HasColumnType("json");
             builder.Property(t => t.State).HasConversion<string>();
+        });
+        
+        modelBuilder.Entity<PredefinedSymbol>(builder =>
+        {
+            builder.ToTable("selected_symbols");
+
+            builder.HasKey(ss => ss.Symbol);
+            builder.Property(ss => ss.Symbol).HasMaxLength(32);
+            // builder.Property(ss => ss.ForecastedSellOffset).HasConversion(new TimeSpanToTicksConverter());
         });
     }
 }

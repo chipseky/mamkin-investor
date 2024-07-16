@@ -3,11 +3,14 @@ namespace Chipseky.MamkinInvestor.Domain;
 public class Trade
 {
     public Guid TradeId { get; private set; }
+    
     public string Symbol { get; private set; }
 
     public DateTime CreatedAt { get; private set; }
 
     public DateTime UpdatedAt { get; private set; }
+    
+    public DateTime? ForecastedSellDate { get; private set; }
     
     public decimal HeldCoinsCount { get; private set; }
 
@@ -22,7 +25,7 @@ public class Trade
     
     private Trade(){}
 
-    public static Trade Create(Guid tradeId, string symbol)
+    public static Trade Create(Guid tradeId, string symbol, TimeSpan? sellOffset)
     {
         var currentMoment = DateTime.UtcNow;
         return new Trade
@@ -32,6 +35,7 @@ public class Trade
             CreatedAt = currentMoment,
             UpdatedAt = currentMoment,
             State = TradeState.Created,
+            ForecastedSellDate = sellOffset.HasValue ? DateTime.UtcNow + sellOffset.Value : null,
             CurrentProfit = 0
         };
     }

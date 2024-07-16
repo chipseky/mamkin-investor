@@ -5,6 +5,7 @@ using Chipseky.MamkinInvestor.Infrastructure.Options;
 using Chipseky.MamkinInvestor.WebApi.Extensions;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.ReplicationSlots;
+using Chipseky.MamkinInvestor.WebApi.Infrastructure.Repositories;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.TradeEvents;
 using Chipseky.MamkinInvestor.WebApi.Jobs;
 using Chipseky.MamkinInvestor.WebApi.Options;
@@ -69,11 +70,14 @@ builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("T
 builder.Services.Configure<BybitSettings>(builder.Configuration.GetSection("Bybit"));
 builder.Services.Configure<TradingBackgroundServiceSettings>(builder.Configuration.GetSection("TradingBackgroundServiceSettings"));
 
-builder.Services.AddScoped<HotCoinsService>();
+builder.Services.AddScoped<MarketDataService>();
 // builder.Services.AddScoped<IOrdersApi, BybitOrdersApi>();
 builder.Services.AddScoped<IOrdersApi, MockOrdersApi>();
 builder.Services.AddScoped<BybitOrdersApi>();
+builder.Services.AddScoped<BybitHistoryApi>();
 builder.Services.AddScoped<OrdersManager>();
+builder.Services.AddScoped<IPredefinedSymbolsRepository, PredefinedSymbolsRepository>();
+builder.Services.AddScoped<IMarketDataProvider, MarketDataProvider>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
 builder.Services.AddScoped<Trader>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();

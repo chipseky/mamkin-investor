@@ -4,23 +4,24 @@ using Chipseky.MamkinInvestor.Infrastructure.Options;
 using CryptoExchange.Net.Authentication;
 using Microsoft.Extensions.Options;
 
-namespace Chipseky.MamkinInvestor.WebApi.Services;
+namespace Chipseky.MamkinInvestor.Infrastructure;
 
-public class HotCoinsService
+public class MarketDataProvider : IMarketDataProvider
 {
     private readonly string _apiKey;
     private readonly string _apiSecret;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public HotCoinsService(IOptions<BybitSettings> options, IHttpClientFactory httpClientFactory)
+    public MarketDataProvider(IHttpClientFactory httpClientFactory, IOptions<BybitSettings> options)
     {
         _httpClientFactory = httpClientFactory;
         _apiKey = options.Value.ApiKey;
         _apiSecret = options.Value.ApiSecret;
     }
 
-    public async Task<Dictionary<string, SymbolPriceChange>> GetTop10TradingPairs()
+    public async Task<IEnumerable<MarketSymbol>> Get()
     {
+        
         var bybitClient = new BybitRestClient(
             httpClient: _httpClientFactory.CreateClient("bybit_client"),
             optionsDelegate: options =>
@@ -29,18 +30,11 @@ public class HotCoinsService
                 options.ApiCredentials = new ApiCredentials(_apiKey, _apiSecret);
             },
             loggerFactory: null);
-
-        var hotCoins = await bybitClient.V5Api.ExchangeData.GetSpotTickersAsync();
         
-        var top10HotTicker = hotCoins.Data.List
-            .OrderByDescending(t => t.PriceChangePercentag24h)
-            .Take(10)
-            .ToDictionary(
-                t => t.Symbol,
-                t => new SymbolPriceChange(
-                    PriceChangePercentage24H: t.PriceChangePercentag24h,
-                    LastPrice: t.LastPrice));
-
-        return top10HotTicker;
+        var allSymbols = await bybitClient.V5Api.ExchangeData.GetSpotTickersAsync();
+        var result =
+            allSymbols.Data.List.Select(s => new MarketSymbol(s.Symbol, s.LastPrice, s.PriceChangePercentag24h));
+        
+        return result;
     }
 }
