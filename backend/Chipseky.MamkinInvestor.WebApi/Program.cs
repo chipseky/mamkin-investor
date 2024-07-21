@@ -49,9 +49,9 @@ builder.Services.AddHttpClient("bybit_client")
     })
     .SetHandlerLifetime(Timeout.InfiniteTimeSpan); // Disable rotation, as it is handled by PooledConnectionLifetime
 
-builder.Services.AddHttpClient<IRealAdviser, RealAdviser>("adviser_client", client =>
+builder.Services.AddHttpClient<IForecastApi, ForecastApi>("forecast_client", client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["ConnectionStrings:Adviser"]!);
+        client.BaseAddress = new Uri(builder.Configuration["ConnectionStrings:Forecast"]!);
         client.DefaultRequestHeaders.Add("Accept", "application/json");
     })
     .AddPolicyHandler((sp, _) => RetryPoliceHelper.GetRetryPolicy(sp.GetService<ILoggerFactory>()!));
@@ -76,6 +76,7 @@ builder.Services.AddScoped<IOrdersApi, MockOrdersApi>();
 builder.Services.AddScoped<BybitOrdersApi>();
 builder.Services.AddScoped<BybitHistoryApi>();
 builder.Services.AddScoped<OrdersManager>();
+builder.Services.AddScoped<IRealAdviser, RealAdviser>();
 builder.Services.AddScoped<IPredefinedSymbolsRepository, PredefinedSymbolsRepository>();
 builder.Services.AddScoped<IMarketDataProvider, MarketDataProvider>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();

@@ -1,36 +1,31 @@
-using System.Text.Json;
 using Chipseky.MamkinInvestor.Domain;
 
 namespace Chipseky.MamkinInvestor.Infrastructure;
 
 public class RealAdviser : IRealAdviser
 {
-    private readonly HttpClient _httpClient;
+    private readonly IForecastApi _forecastApi;
 
-    public RealAdviser(HttpClient httpClient)
+    public RealAdviser(IForecastApi forecastApi)
     {
-        _httpClient = httpClient;
+        _forecastApi = forecastApi;
     }
 
     public async Task<bool> ShouldBuy(string symbol)
     {
-        using var response = await _httpClient.GetAsync($"/api/advise/buy/{symbol}");
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        
-        response.EnsureSuccessStatusCode();
-        
-        return JsonSerializer.Deserialize<bool>(responseContent);
+        var forecast = await _forecastApi.Get(symbol);
+        return forecast.HeightPriceProbability >= 60;
     }
 
     public async Task<bool> ShouldSell(string symbol)
     {
-        using var response = await _httpClient.GetAsync($"/api/advise/sell/{symbol}");
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-        
-        response.EnsureSuccessStatusCode();
-        
-        return JsonSerializer.Deserialize<bool>(responseContent);
+        // using var response = await _httpClient.GetAsync($"/api/advise/sell/{symbol}");
+        //
+        // var responseContent = await response.Content.ReadAsStringAsync();
+        //
+        // response.EnsureSuccessStatusCode();
+        //
+        // return JsonSerializer.Deserialize<bool>(responseContent);
+        throw new NotImplementedException();
     }
 }
