@@ -2,7 +2,7 @@ using Chipseky.MamkinInvestor.Domain;
 using Chipseky.MamkinInvestor.Domain.TradeEvents;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 
-namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.TradeEvents;
+namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Repositories;
 
 public class TradeEventsRepository : ITradeEventsRepository
 {

@@ -16,6 +16,8 @@ public class Trade
 
     public TradeState State { get; private set; }
     
+    public Guid? ForecastId { get; private set; }
+    
     public string? FailReason { get; private set; }
     
     private ICollection<TradeOrder> _history = new List<TradeOrder>();
@@ -25,7 +27,7 @@ public class Trade
     
     private Trade(){}
 
-    public static Trade Create(Guid tradeId, string symbol, TimeSpan? sellOffset)
+    public static Trade Create(Guid tradeId, string symbol, TimeSpan? sellOffset, Guid forecastId)
     {
         var currentMoment = DateTime.UtcNow;
         return new Trade
@@ -35,6 +37,7 @@ public class Trade
             CreatedAt = currentMoment,
             UpdatedAt = currentMoment,
             State = TradeState.Created,
+            ForecastId = forecastId,
             ForecastedSellDate = sellOffset.HasValue ? DateTime.UtcNow + sellOffset.Value : null,
             CurrentProfit = 0
         };

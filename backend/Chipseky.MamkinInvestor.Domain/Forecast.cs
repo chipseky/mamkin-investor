@@ -4,6 +4,8 @@ namespace Chipseky.MamkinInvestor.Domain;
 
 public class Forecast
 {
+    public Guid ForecastId { get; private set; }
+        
     [JsonPropertyName("h")]
     public decimal HeightPrice { get; private set; }
     
@@ -25,5 +27,6 @@ public class Forecast
         LowPrice = lowPrice;
         HeightPriceProbability = heightPriceProbability;
         LowPriceProbability = lowPriceProbability;
+        ForecastId = Guid.NewGuid();
     }
 }

@@ -1,6 +1,5 @@
 using Chipseky.MamkinInvestor.Domain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 
@@ -8,6 +7,7 @@ public class ApplicationDbContext : DbContext
 {
     public DbSet<Trade> Trades { get; set; }
     public DbSet<DbTradeEvent> TradeEvents { get; set; }
+    public DbSet<Forecast> Forecasts { get; set; }
     
     public DbSet<PredefinedSymbol> PredefinedSymbols { get; set; }
     

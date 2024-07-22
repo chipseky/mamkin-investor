@@ -3,7 +3,7 @@ using Chipseky.MamkinInvestor.Domain.Repositories;
 using Chipseky.MamkinInvestor.WebApi.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
-namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.TradeEvents;
+namespace Chipseky.MamkinInvestor.WebApi.Infrastructure.Repositories;
 
 public class TradesRepository : ITradesRepository
 {

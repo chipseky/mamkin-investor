@@ -11,10 +11,10 @@ public class RealAdviser : IRealAdviser
         _forecastApi = forecastApi;
     }
 
-    public async Task<bool> ShouldBuy(string symbol)
+    public async Task<(bool, Forecast)> ShouldBuy(string symbol)
     {
         var forecast = await _forecastApi.Get(symbol);
-        return forecast.HeightPriceProbability >= 60;
+        return (forecast.HeightPriceProbability >= 60, forecast);
     }
 
     public async Task<bool> ShouldSell(string symbol)

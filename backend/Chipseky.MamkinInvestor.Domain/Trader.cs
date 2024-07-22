@@ -8,12 +8,14 @@ public class Trader
 
     private readonly ITradesRepository _tradesRepository;
     private readonly IRealAdviser _realAdviser;
+    private readonly IForecastsRepository _forecastsRepository;
 
-    public Trader(OrdersManager ordersManager, ITradesRepository tradesRepository, IRealAdviser realAdviser)
+    public Trader(OrdersManager ordersManager, ITradesRepository tradesRepository, IRealAdviser realAdviser, IForecastsRepository forecastsRepository)
     {
         _ordersManager = ordersManager;
         _tradesRepository = tradesRepository;
         _realAdviser = realAdviser;
+        _forecastsRepository = forecastsRepository;
     }
 
     public async Task Feed(IDictionary<string, SymbolPriceChange> marketData)
@@ -24,14 +26,17 @@ public class Trader
             if (openedTrade != null)
                 continue;
             
-            var shouldBuy = await _realAdviser.ShouldBuy(symbol.Key);
+            var (shouldBuy, forecast) = await _realAdviser.ShouldBuy(symbol.Key);
             if (!shouldBuy) continue;
+
+            await _forecastsRepository.Store(forecast);
             
             var usdtQuantity = GetUsdtQuantity(symbol.Key);
             await _ordersManager.CreateBuyOrder(
                 symbol:symbol.Key, 
                 usdtQuantity: usdtQuantity,
-                expectedCoinPrice: symbol.Value.LastPrice);
+                expectedCoinPrice: symbol.Value.LastPrice,
+                forecastId: forecast.ForecastId);
         }
     }
 

@@ -26,14 +26,14 @@ public class OrdersManager
         _predefinedSymbolsRepository = predefinedSymbolsRepository;
     }
 
-    public async Task CreateBuyOrder(string symbol, decimal usdtQuantity, decimal expectedCoinPrice)
+    public async Task CreateBuyOrder(string symbol, decimal usdtQuantity, decimal expectedCoinPrice, Guid forecastId)
     {
         var tradeId = Guid.NewGuid();
 
         try
         {
             var sellOffset = await _predefinedSymbolsRepository.GetForecastedSellOffset(symbol);
-            await _tradesRepository.Save(Trade.Create(tradeId, symbol, sellOffset));
+            await _tradesRepository.Save(Trade.Create(tradeId, symbol, sellOffset, forecastId));
 
             var buyIntentionCreatedEvent = new BuyIntentionCreated(symbol, tradeId, usdtQuantity, expectedCoinPrice);
             await _tradeEventsRepository.Store(buyIntentionCreatedEvent);
