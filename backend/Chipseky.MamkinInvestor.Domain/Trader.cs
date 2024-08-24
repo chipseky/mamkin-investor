@@ -27,10 +27,10 @@ public class Trader
                 continue;
             
             var (shouldBuy, forecast) = await _realAdviser.ShouldBuy(symbol.Key);
+            await _forecastsRepository.Store(forecast);
+
             if (!shouldBuy) continue;
 
-            await _forecastsRepository.Store(forecast);
-            
             var usdtQuantity = GetUsdtQuantity(symbol.Key);
             await _ordersManager.CreateBuyOrder(
                 symbol:symbol.Key, 

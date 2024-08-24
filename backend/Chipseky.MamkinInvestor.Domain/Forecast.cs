@@ -19,7 +19,7 @@ public class Forecast
     public double LowPriceProbability { get; private set; }
 
     [JsonPropertyName("error")]
-    public string Error { get; private set; }
+    public string? Error { get; private set; }
 
     public Forecast(decimal heightPrice, decimal lowPrice, double heightPriceProbability, double lowPriceProbability)
     {
