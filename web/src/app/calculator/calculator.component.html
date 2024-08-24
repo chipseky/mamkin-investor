@@ -1,0 +1,30 @@
+<p>calc profit:</p>
+
+<mat-card>
+  <form [formGroup]="form">
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>buy price</mat-label>
+      <input matInput type="number" formControlName="buy_price">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>buy commission</mat-label>
+      <input matInput type="number" formControlName="buy_commission">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>sell price</mat-label>
+      <input matInput type="number" formControlName="sell_price">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>sell commission</mat-label>
+      <input matInput type="number" formControlName="sell_commission">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>profit</mat-label>
+      <input matInput type="number" formControlName="profit" readonly>
+    </mat-form-field>
+  </form>
+</mat-card>

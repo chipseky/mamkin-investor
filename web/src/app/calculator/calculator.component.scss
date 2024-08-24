@@ -1,0 +1,10 @@
+/* my-form.component.css */
+.form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field {
+  width: 100%; /* Чтобы поля занимали всю ширину контейнера */
+  margin-bottom: 16px; /* Добавляем отступ снизу для разделения полей */
+}
