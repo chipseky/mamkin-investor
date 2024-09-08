@@ -84,6 +84,7 @@ builder.Services.AddScoped<Trader>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();
 builder.Services.AddHostedService<TradingBackgroundService>();
 builder.Services.AddHostedService<TradesWatcherBackgroundService>();
+builder.Services.AddHostedService<TrendsDetectorBackgroundService>();
 
 builder.Services.Configure<PostgresReplicationServiceOptions>(o =>
 {
