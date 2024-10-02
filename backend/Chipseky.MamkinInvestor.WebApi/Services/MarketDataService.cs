@@ -29,7 +29,7 @@ public class MarketDataService
         return top10HotTicker;
     }
     
-    public async Task<Dictionary<string, SymbolPriceChange>> GetSymbolsDetails()
+    public async Task<Dictionary<string, SymbolPriceChange>> GetSymbolsForTrading()
     {
         var predefinedSymbols = await _predefinedSymbolsRepository.Get();
 

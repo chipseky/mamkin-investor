@@ -39,7 +39,7 @@ public class TradingBackgroundService : BackgroundService
                 var trader = scope.ServiceProvider.GetRequiredService<Trader>();
                 var marketDataService = scope.ServiceProvider.GetRequiredService<MarketDataService>();
 
-                var symbolsDetails = await marketDataService.GetSymbolsDetails();
+                var symbolsDetails = await marketDataService.GetSymbolsForTrading();
 
                 await trader.Feed(symbolsDetails);
 

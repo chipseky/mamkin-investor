@@ -69,9 +69,12 @@ builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("T
 builder.Services.Configure<BybitSettings>(builder.Configuration.GetSection("Bybit"));
 builder.Services.Configure<TradingBackgroundServiceSettings>(builder.Configuration.GetSection("TradingBackgroundServiceSettings"));
 
+builder.Services.Configure<InfluxDbSettings>(builder.Configuration.GetSection("InfluxDb"));
+builder.Services.AddSingleton<InfluxDbService>();
+
 builder.Services.AddScoped<MarketDataService>();
 // builder.Services.AddScoped<IOrdersApi, BybitOrdersApi>();
-builder.Services.AddScoped<IOrdersApi, MockOrdersApi>();
+builder.Services.AddScoped<IOrdersApi, FakeOrdersApi>();
 builder.Services.AddScoped<BybitOrdersApi>();
 builder.Services.AddScoped<BybitHistoryApi>();
 builder.Services.AddScoped<OrdersManager>();
@@ -81,10 +84,12 @@ builder.Services.AddScoped<IPredefinedSymbolsRepository, PredefinedSymbolsReposi
 builder.Services.AddScoped<IMarketDataProvider, MarketDataProvider>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
 builder.Services.AddScoped<Trader>();
+builder.Services.AddScoped<BybitWebSocketService>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();
 builder.Services.AddHostedService<TradingBackgroundService>();
 builder.Services.AddHostedService<TradesWatcherBackgroundService>();
 builder.Services.AddHostedService<TrendsDetectorBackgroundService>();
+builder.Services.AddHostedService<WebSocketsBackgroundService>();
 
 builder.Services.Configure<PostgresReplicationServiceOptions>(o =>
 {

@@ -9,14 +9,14 @@ using OrderSide = Chipseky.MamkinInvestor.Domain.OrderSide;
 
 namespace Chipseky.MamkinInvestor.Infrastructure;
 
-public class MockOrdersApi : IOrdersApi
+public class FakeOrdersApi : IOrdersApi
 {
     private readonly ILogger<BybitOrdersApi> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptions<BybitSettings> _bybitSettings;
     private readonly IDistributedCache _cache;
 
-    public MockOrdersApi(
+    public FakeOrdersApi(
         ILogger<BybitOrdersApi> logger,
         IHttpClientFactory httpClientFactory, 
         IOptions<BybitSettings> bybitSettings, 
@@ -41,16 +41,7 @@ public class MockOrdersApi : IOrdersApi
                 options: new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }, 
                 cancellationToken: CancellationToken.None);
             
-            var isSuccess = true;
-            if (isSuccess)
-            {
-                return PlaceOrderResult.Success(fakeOrderId.ToString());
-            }            
-            else
-            {
-                _logger.LogError("fake order with id {fakeOrderId} error", fakeOrderId);
-                return PlaceOrderResult.Fail($"fake order with id {fakeOrderId} error");
-            }
+            return PlaceOrderResult.Success(fakeOrderId.ToString());
         }
         catch (Exception ex)
         {
@@ -72,10 +63,7 @@ public class MockOrdersApi : IOrdersApi
                 options: new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }, 
                 cancellationToken: CancellationToken.None);
 
-            var isSuccess = true;
-            return isSuccess
-                ? PlaceOrderResult.Success(fakeOrderId.ToString())
-                : PlaceOrderResult.Fail($"fake order with id {fakeOrderId} error");
+            return PlaceOrderResult.Success(fakeOrderId.ToString());
         }
         catch (Exception ex)
         {
@@ -103,7 +91,7 @@ public class MockOrdersApi : IOrdersApi
                     actualAveragePrice: symbolInfo.LastPrice,
                     quantity: fakeOrder.Quantity, // сколько хотел потратить usdt
                     quantityFilled: fakeOrder.Quantity / symbolInfo.LastPrice, // количество купленных монет
-                    executedFee: fakeOrder.Quantity / symbolInfo.LastPrice * .01m,
+                    executedFee: fakeOrder.Quantity / symbolInfo.LastPrice * BybitCommissionConstants.BuyCommission,
                     valueFilled: fakeOrder.Quantity, // сколько по факту потратил
                     valueRemaining: 0, // из запланированного осталось
                     status: OrderStatus.PartiallyFilledCanceled,
@@ -115,7 +103,7 @@ public class MockOrdersApi : IOrdersApi
                     actualAveragePrice: symbolInfo.LastPrice,
                     quantity: fakeOrder.Quantity, // сколько монет хотел продать
                     quantityFilled: fakeOrder.Quantity, // сколько монет продал по факту
-                    executedFee: fakeOrder.Quantity * symbolInfo.LastPrice * .01m,
+                    executedFee: fakeOrder.Quantity * symbolInfo.LastPrice * BybitCommissionConstants.SellCommission,
                     valueFilled: fakeOrder.Quantity * symbolInfo.LastPrice, // сколько получил баксов за продажу монет, 0.997749349m and 0.002250651m just to emulate real case
                     valueRemaining: 0,
                     status: OrderStatus.PartiallyFilledCanceled,
