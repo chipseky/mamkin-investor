@@ -13,14 +13,26 @@ public class InfluxService : IDisposable
         _client = new InfluxDBClient(url, token);
         _writeApiAsync = _client.GetWriteApiAsync();
     }
-
-    public async Task Write(PointData point)
+    
+    public async Task<T> Query<T>(Func<QueryApi, Task<T>> action)
     {
-        await _writeApiAsync.WritePointAsync(point, "test-bucket", "0e94d4a5b0f1f565");
+        var query = _client.GetQueryApi();
+        return await action(query);
+    }
+    
+    public async Task Write(string bucket, PointData point)
+    {
+        await _writeApiAsync.WritePointAsync(point, bucket, "mamkin-investor");
     }
 
     public void Dispose()
     {
         _client.Dispose();
     }
+}
+
+public class SymbolPrice
+{
+    public string Time { get; init; }
+    public decimal Price { get; init; }
 }

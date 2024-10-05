@@ -143,7 +143,7 @@ public class WebSocketsBackgroundService : BackgroundService
                     .Field("value", lastPrice)
                     .Timestamp(ts, WritePrecision.Ms);
 
-                await _influxService.Write(point);
+                await _influxService.Write("bybit-bucket", point);
             }
             catch (Exception ex)
             {
