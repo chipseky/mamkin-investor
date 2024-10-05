@@ -10,7 +10,7 @@ services:
     depends_on: 
       - mamkin-investor-api
   mamkin-investor-api:
-    image: chipseky/mamkin-investor:0.0.42
+    image: chipseky/mamkin-investor:0.0.43
     environment:
       - ConnectionStrings__MamkinInvestorDatabase=Host=postgresdb;Port=5432;Database=mamkin-investor;Username=${DB_USERNAME:-xxx};Password=${DB_PASSWORD:-xxx};
       - ConnectionStrings__Adviser=${ADVISER_API:-http://adviser:5678}
@@ -21,6 +21,7 @@ services:
       - Telegram__GroupChatId=${TG_BOT_GROUP_CHAT_ID:-xxx}
       - CORS__Origins__0=${CORS_ORIGINS_0:-http://localhost:4200}
       - TradingBackgroundServiceSettings__CheckPeriodInSeconds=${CHECK_PERIOD_SECONDS:-60}
+      - InfluxDb__Url=http://influxdb2:8086
     ports:
       - 5555:8080
     depends_on: 
