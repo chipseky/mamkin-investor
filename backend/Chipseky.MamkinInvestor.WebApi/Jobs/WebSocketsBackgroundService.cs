@@ -13,15 +13,15 @@ public class WebSocketsBackgroundService : BackgroundService
     private const string WsUrl = "wss://stream.bybit.com/v5/public/spot";
     private readonly IEnumerable<string> _tickers = new[] { "BTCUSDT", "ETHUSDT" }.Select(t => $"tickers.{t}");
     
-    private readonly InfluxService _influxService;
+    private readonly InfluxDbService _influxDbService;
     private readonly ILogger<WebSocketsBackgroundService> _logger;
     private readonly ConcurrentQueue<byte[]> _messageQueue = new();
     private readonly CancellationTokenSource _cts = new();
     private readonly CancellationTokenSource _ctsQueueHandler = new();
 
-    public WebSocketsBackgroundService(InfluxService influxService, ILogger<WebSocketsBackgroundService> logger)
+    public WebSocketsBackgroundService(InfluxDbService influxDbService, ILogger<WebSocketsBackgroundService> logger)
     {
-        _influxService = influxService;
+        _influxDbService = influxDbService;
         _logger = logger;
     }
 
@@ -143,7 +143,7 @@ public class WebSocketsBackgroundService : BackgroundService
                     .Field("value", lastPrice)
                     .Timestamp(ts, WritePrecision.Ms);
 
-                await _influxService.Write("bybit-bucket", point);
+                await _influxDbService.Write("bybit-bucket", point);
             }
             catch (Exception ex)
             {

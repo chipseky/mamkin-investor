@@ -69,7 +69,8 @@ builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("T
 builder.Services.Configure<BybitSettings>(builder.Configuration.GetSection("Bybit"));
 builder.Services.Configure<TradingBackgroundServiceSettings>(builder.Configuration.GetSection("TradingBackgroundServiceSettings"));
 
-builder.Services.AddSingleton(new InfluxService("http://localhost:8086", "MyInitialAdminToken0=="));
+builder.Services.Configure<InfluxDbSettings>(builder.Configuration.GetSection("InfluxDb"));
+builder.Services.AddSingleton<InfluxDbService>();
 
 builder.Services.AddScoped<MarketDataService>();
 // builder.Services.AddScoped<IOrdersApi, BybitOrdersApi>();

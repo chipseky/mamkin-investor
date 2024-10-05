@@ -1,4 +1,5 @@
 using Chipseky.MamkinInvestor.Infrastructure;
+using Chipseky.MamkinInvestor.WebApi.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chipseky.MamkinInvestor.WebApi.Controllers;
@@ -7,19 +8,21 @@ namespace Chipseky.MamkinInvestor.WebApi.Controllers;
 public class TimeSeriesController : ControllerBase
 {
     [HttpGet("/api/time-series")]
-    // [ProducesResponseType<BybitBalance>(200)]
+    [ProducesResponseType<IEnumerable<SymbolPrice>>(200)]
     public async Task<IActionResult> GetTimeSeries(
         [FromQuery] string symbol,
-        [FromServices] InfluxService service,
+        [FromQuery] string range,
+        [FromQuery] string interval,
+        [FromServices] InfluxDbService dbService,
         CancellationToken cancellationToken)
     {
-        var results = await service.Query(async query =>
+        var results = await dbService.Query(async query =>
         {
-            var flux = """
+            var flux = $$"""
                     from(bucket: "bybit-bucket")
-                        |> range(start: -2h)
-                        |> filter(fn: (r) => r._measurement == "tickers" and r.ticker == "BTCUSDT")
-                        |> aggregateWindow(every: 1s, fn: mean, createEmpty: false)
+                        |> range(start: -{{range}})
+                        |> filter(fn: (r) => r._measurement == "tickers" and r.ticker == "{{symbol}}")
+                        |> aggregateWindow(every: {{interval}}, fn: mean, createEmpty: false)
                         |> sort(columns: ["_time"], desc: false)
                 """;
             var tables = await query.QueryAsync(flux, "mamkin-investor", cancellationToken);
@@ -27,7 +30,7 @@ public class TimeSeriesController : ControllerBase
                 table.Records.Select(record =>
                     new SymbolPrice
                     {
-                        Time = record.GetTimeInDateTime().ToString()!,
+                        Time = record.GetTimeInDateTime()!.Value.ToString("yyyy-MM-dd HH:mm:ss.fff")!,
                         Price = Convert.ToDecimal(record.GetValue())
                     }));
         });
