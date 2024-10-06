@@ -20,6 +20,6 @@ public class ForecastApi : IForecastApi
         
         response.EnsureSuccessStatusCode();
         
-        return JsonSerializer.Deserialize<Forecast>(responseContent);
+        return JsonSerializer.Deserialize<Forecast>(responseContent)!;
     }
 }

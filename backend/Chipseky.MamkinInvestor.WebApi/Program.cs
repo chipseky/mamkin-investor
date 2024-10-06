@@ -74,7 +74,7 @@ builder.Services.AddSingleton<InfluxDbService>();
 
 builder.Services.AddScoped<MarketDataService>();
 // builder.Services.AddScoped<IOrdersApi, BybitOrdersApi>();
-builder.Services.AddScoped<IOrdersApi, MockOrdersApi>();
+builder.Services.AddScoped<IOrdersApi, FakeOrdersApi>();
 builder.Services.AddScoped<BybitOrdersApi>();
 builder.Services.AddScoped<BybitHistoryApi>();
 builder.Services.AddScoped<OrdersManager>();

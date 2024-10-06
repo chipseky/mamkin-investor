@@ -53,11 +53,27 @@ public class Trade
         
         State = TradeState.Opened;
         HeldCoinsCount = tradeOrder.QuantityFilled ?? 0;
-        CurrentProfit = -tradeOrder.ValueFilled ?? 0;
+        CurrentProfit = -CalcOpenOrderProfit(tradeOrder.ValueFilled);
         UpdatedAt = DateTime.UtcNow;
         _history.Add(tradeOrder);
     }
+
+    private decimal CalcOpenOrderProfit(decimal? valueFilled)
+    {
+        if(!valueFilled.HasValue)
+            return 0;
+        
+        return valueFilled.Value + valueFilled.Value * BybitCommissionConstants.BuyCommission;
+    }
     
+    private decimal CalcCloseOrderProfit(decimal? valueFilled)
+    {
+        if(!valueFilled.HasValue)
+            return 0;
+        
+        return valueFilled.Value + valueFilled.Value * BybitCommissionConstants.SellCommission;
+    }
+
     public void Close(TradeOrder tradeOrder)
     {
         if (State != TradeState.IsSold)
@@ -66,7 +82,7 @@ public class Trade
         if(tradeOrder.OrderSide != OrderSide.Sell)
             throw new InvalidOperationException();
 
-        CurrentProfit += tradeOrder.ValueFilled ?? 0;
+        CurrentProfit += CalcCloseOrderProfit(tradeOrder.ValueFilled);
         State = TradeState.Closed;
         // HeldCoinsCount = tradeOrder.QuantityFilled!.Value;
         UpdatedAt = DateTime.UtcNow;

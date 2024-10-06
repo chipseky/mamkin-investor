@@ -26,7 +26,7 @@ public class TradeOrder
     public decimal? ExecutedFee { get; private set; }
     
     /// <summary>
-    /// for example, we asked by BTC with 10 USDT, but exchange fullfill only 9.97749349,
+    /// for example, we asked to buy BTC with 10 USDT, but the exchange fullfill only 9.97749349,
     /// ValueFilled will have 9.97749349
     /// ValueRemaining will have 0.02250651
     /// ActualAveragePrice will have 59745.47 for 1 BTC
