@@ -84,6 +84,7 @@ builder.Services.AddScoped<IPredefinedSymbolsRepository, PredefinedSymbolsReposi
 builder.Services.AddScoped<IMarketDataProvider, MarketDataProvider>();
 builder.Services.AddScoped<ITradeEventsRepository, TradeEventsRepository>();
 builder.Services.AddScoped<Trader>();
+builder.Services.AddScoped<BybitWebSocketService>();
 builder.Services.AddHostedService<TelegramBotBackgroundService>();
 builder.Services.AddHostedService<TradingBackgroundService>();
 builder.Services.AddHostedService<TradesWatcherBackgroundService>();

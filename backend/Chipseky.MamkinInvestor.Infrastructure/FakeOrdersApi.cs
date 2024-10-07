@@ -91,7 +91,7 @@ public class FakeOrdersApi : IOrdersApi
                     actualAveragePrice: symbolInfo.LastPrice,
                     quantity: fakeOrder.Quantity, // сколько хотел потратить usdt
                     quantityFilled: fakeOrder.Quantity / symbolInfo.LastPrice, // количество купленных монет
-                    executedFee: fakeOrder.Quantity / symbolInfo.LastPrice * .01m,
+                    executedFee: fakeOrder.Quantity / symbolInfo.LastPrice * BybitCommissionConstants.BuyCommission,
                     valueFilled: fakeOrder.Quantity, // сколько по факту потратил
                     valueRemaining: 0, // из запланированного осталось
                     status: OrderStatus.PartiallyFilledCanceled,
@@ -103,7 +103,7 @@ public class FakeOrdersApi : IOrdersApi
                     actualAveragePrice: symbolInfo.LastPrice,
                     quantity: fakeOrder.Quantity, // сколько монет хотел продать
                     quantityFilled: fakeOrder.Quantity, // сколько монет продал по факту
-                    executedFee: fakeOrder.Quantity * symbolInfo.LastPrice * .01m,
+                    executedFee: fakeOrder.Quantity * symbolInfo.LastPrice * BybitCommissionConstants.SellCommission,
                     valueFilled: fakeOrder.Quantity * symbolInfo.LastPrice, // сколько получил баксов за продажу монет, 0.997749349m and 0.002250651m just to emulate real case
                     valueRemaining: 0,
                     status: OrderStatus.PartiallyFilledCanceled,
