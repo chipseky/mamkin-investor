@@ -2,7 +2,7 @@ import {CollectionViewer, DataSource} from "@angular/cdk/collections";
 import {BehaviorSubject, catchError, finalize, Observable, of} from "rxjs";
 import {
   TradesTableItem,
-  TradesClient, TradeEventsTableDataQuery, PagedDataOfObject
+  TradesClient, TradeEventsQuery, PagedDataOfObject
 } from "../api-clients";
 
 export class TradeEventsDataSource implements DataSource<any> {
@@ -27,7 +27,7 @@ export class TradeEventsDataSource implements DataSource<any> {
   loadTradeEvents(pageIndex: number = 0, pageSize: number = 10) {
     this.loadingSubject.next(true);
 
-    this.tradesClient.getTradeEvents(new TradeEventsTableDataQuery({
+    this.tradesClient.getTradeEvents(new TradeEventsQuery({
       page: pageIndex,
       pageSize: pageSize})).pipe(
         catchError(() => of([])),

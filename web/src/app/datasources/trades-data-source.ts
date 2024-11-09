@@ -1,6 +1,6 @@
 import {CollectionViewer, DataSource} from "@angular/cdk/collections";
 import {BehaviorSubject, catchError, finalize, Observable, of} from "rxjs";
-import {TradesTableItem, TradesClient, TradesTableDataQuery, TradeState, PagedDataOfTradesTableItem} from "../api-clients";
+import {TradesTableItem, TradesClient, TradesQuery, TradeState, PagedDataOfTradesTableItem} from "../api-clients";
 
 export class TradesDataSource implements DataSource<TradesTableItem> {
 
@@ -24,7 +24,7 @@ export class TradesDataSource implements DataSource<TradesTableItem> {
   loadTrades(filter: string = '', tradeState: TradeState, pageIndex: number = 0, pageSize: number = 10) {
     this.loadingSubject.next(true);
 
-    this.tradesClient.getTrades(new TradesTableDataQuery({
+    this.tradesClient.getTrades(new TradesQuery({
       tradingPair: filter,
       tradeState: tradeState,
       page: pageIndex,

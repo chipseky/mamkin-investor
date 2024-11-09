@@ -138,6 +138,53 @@ export class SystemClient {
         return _observableOf(null as any);
     }
 
+    getTickers(): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/tickers";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTickers(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTickers(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processGetTickers(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
     ping(): Observable<FileResponse> {
         let url_ = this.baseUrl + "/api/ping";
         url_ = url_.replace(/[?&]$/, "");
@@ -189,6 +236,88 @@ export class SystemClient {
 @Injectable({
     providedIn: 'root'
 })
+export class TimeSeriesClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "http://localhost:5083";
+    }
+
+    getTimeSeries(symbol: string | undefined, range: string | undefined, interval: string | undefined): Observable<SymbolPrice[]> {
+        let url_ = this.baseUrl + "/api/time-series?";
+        if (symbol === null)
+            throw new Error("The parameter 'symbol' cannot be null.");
+        else if (symbol !== undefined)
+            url_ += "symbol=" + encodeURIComponent("" + symbol) + "&";
+        if (range === null)
+            throw new Error("The parameter 'range' cannot be null.");
+        else if (range !== undefined)
+            url_ += "range=" + encodeURIComponent("" + range) + "&";
+        if (interval === null)
+            throw new Error("The parameter 'interval' cannot be null.");
+        else if (interval !== undefined)
+            url_ += "interval=" + encodeURIComponent("" + interval) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            withCredentials: true,
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTimeSeries(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTimeSeries(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SymbolPrice[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SymbolPrice[]>;
+        }));
+    }
+
+    protected processGetTimeSeries(response: HttpResponseBase): Observable<SymbolPrice[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SymbolPrice.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class TradesClient {
     private http: HttpClient;
     private baseUrl: string;
@@ -199,7 +328,7 @@ export class TradesClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "http://localhost:5083";
     }
 
-    getTrades(query: TradesTableDataQuery): Observable<PagedDataOfTradesTableItem> {
+    getTrades(query: TradesQuery): Observable<PagedDataOfTradesTableItem> {
         let url_ = this.baseUrl + "/api/trades";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -252,7 +381,7 @@ export class TradesClient {
         return _observableOf(null as any);
     }
 
-    getTradeEvents(query: TradeEventsTableDataQuery): Observable<PagedDataOfObject> {
+    getTradeEvents(query: TradeEventsQuery): Observable<PagedDataOfObject> {
         let url_ = this.baseUrl + "/api/trade-events";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -611,6 +740,46 @@ export interface IBybitAssetBalance {
     bonus?: number | undefined;
 }
 
+export class SymbolPrice implements ISymbolPrice {
+    time?: string;
+    price?: number;
+
+    constructor(data?: ISymbolPrice) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.time = _data["time"];
+            this.price = _data["price"];
+        }
+    }
+
+    static fromJS(data: any): SymbolPrice {
+        data = typeof data === 'object' ? data : {};
+        let result = new SymbolPrice();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["time"] = this.time;
+        data["price"] = this.price;
+        return data;
+    }
+}
+
+export interface ISymbolPrice {
+    time?: string;
+    price?: number;
+}
+
 export class PagedDataOfTradesTableItem implements IPagedDataOfTradesTableItem {
     page!: number;
     pageSize!: number;
@@ -837,13 +1006,13 @@ export enum OrderSide {
     Sell = 1,
 }
 
-export class TradesTableDataQuery implements ITradesTableDataQuery {
+export class TradesQuery implements ITradesQuery {
     tradingPair?: string;
     tradeState?: TradeState | undefined;
     page?: number;
     pageSize?: number;
 
-    constructor(data?: ITradesTableDataQuery) {
+    constructor(data?: ITradesQuery) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -861,9 +1030,9 @@ export class TradesTableDataQuery implements ITradesTableDataQuery {
         }
     }
 
-    static fromJS(data: any): TradesTableDataQuery {
+    static fromJS(data: any): TradesQuery {
         data = typeof data === 'object' ? data : {};
-        let result = new TradesTableDataQuery();
+        let result = new TradesQuery();
         result.init(data);
         return result;
     }
@@ -878,7 +1047,7 @@ export class TradesTableDataQuery implements ITradesTableDataQuery {
     }
 }
 
-export interface ITradesTableDataQuery {
+export interface ITradesQuery {
     tradingPair?: string;
     tradeState?: TradeState | undefined;
     page?: number;
@@ -944,11 +1113,11 @@ export interface IPagedDataOfObject {
     items: any[];
 }
 
-export class TradeEventsTableDataQuery implements ITradeEventsTableDataQuery {
+export class TradeEventsQuery implements ITradeEventsQuery {
     page?: number;
     pageSize?: number;
 
-    constructor(data?: ITradeEventsTableDataQuery) {
+    constructor(data?: ITradeEventsQuery) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -964,9 +1133,9 @@ export class TradeEventsTableDataQuery implements ITradeEventsTableDataQuery {
         }
     }
 
-    static fromJS(data: any): TradeEventsTableDataQuery {
+    static fromJS(data: any): TradeEventsQuery {
         data = typeof data === 'object' ? data : {};
-        let result = new TradeEventsTableDataQuery();
+        let result = new TradeEventsQuery();
         result.init(data);
         return result;
     }
@@ -979,7 +1148,7 @@ export class TradeEventsTableDataQuery implements ITradeEventsTableDataQuery {
     }
 }
 
-export interface ITradeEventsTableDataQuery {
+export interface ITradeEventsQuery {
     page?: number;
     pageSize?: number;
 }
