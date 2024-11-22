@@ -12,8 +12,44 @@ using Chipseky.MamkinInvestor.WebApi.QueryHandlers;
 using Chipseky.MamkinInvestor.WebApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));//
+
+var secretKey = builder.Configuration.GetSection("JWTSettings:SecretKey").Value;
+var isser = builder.Configuration.GetSection("JWTSettings:Isser").Value;
+var audience = builder.Configuration.GetSection("JWTSettings:Audience").Value;
+var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = isser,
+        ValidAudience = audience,
+        ValidateLifetime = true,
+        IssuerSigningKey = signinKey,
+        ValidateIssuerSigningKey = true
+    };
+});
+
+var connectionStringUsers = builder.Configuration.GetConnectionString("UserDB");
+builder.Services.AddDbContext<UserDbContext>(options => options.UseSqlite(connectionStringUsers));
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<UserDbContext>();//
+
 
 builder.Configuration.LoadDotEnv();
 
@@ -123,6 +159,9 @@ app.UseCors(b => b
     .SetPreflightMaxAge(TimeSpan.FromMinutes(15)));
 
 app.UseHttpsRedirection();
+
+app.UseAuthorization();//
+app.UseAuthentication();//
 
 app.MapControllers();
 
