@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Mamkin.In.WebApi.Infrastructure.ReplicationSlots;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
