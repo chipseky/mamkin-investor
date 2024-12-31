@@ -1,19 +1,19 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /mamkin-investor
 
-COPY Chipseky.MamkinInvestor.Infrastructure/Chipseky.MamkinInvestor.Infrastructure.csproj Chipseky.MamkinInvestor.Infrastructure/
-COPY Chipseky.MamkinInvestor.WebApi/Chipseky.MamkinInvestor.WebApi.csproj Chipseky.MamkinInvestor.WebApi/
-COPY Chipseky.MamkinInvestor.Domain/Chipseky.MamkinInvestor.Domain.csproj Chipseky.MamkinInvestor.Domain/
+COPY Mamkin.In.Infrastructure/Mamkin.In.Infrastructure.csproj Mamkin.In.Infrastructure/
+COPY Mamkin.In.WebApi/Mamkin.In.WebApi.csproj Mamkin.In.WebApi/
+COPY Mamkin.In.Domain/Mamkin.In.Domain.csproj Mamkin.In.Domain/
 
-RUN dotnet restore Chipseky.MamkinInvestor.WebApi/Chipseky.MamkinInvestor.WebApi.csproj
+RUN dotnet restore Mamkin.In.WebApi/Mamkin.In.WebApi.csproj
 
-COPY ./Chipseky.MamkinInvestor.Infrastructure ./Chipseky.MamkinInvestor.Infrastructure
-COPY ./Chipseky.MamkinInvestor.WebApi ./Chipseky.MamkinInvestor.WebApi
-COPY ./Chipseky.MamkinInvestor.Domain ./Chipseky.MamkinInvestor.Domain
+COPY ./Mamkin.In.Infrastructure ./Mamkin.In.Infrastructure
+COPY ./Mamkin.In.WebApi ./Mamkin.In.WebApi
+COPY ./Mamkin.In.Domain ./Mamkin.In.Domain
 
-RUN dotnet publish Chipseky.MamkinInvestor.WebApi/Chipseky.MamkinInvestor.WebApi.csproj -c Release -o /app --no-restore
+RUN dotnet publish Mamkin.In.WebApi/Mamkin.In.WebApi.csproj -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build-env /app .
-ENTRYPOINT ["dotnet", "Chipseky.MamkinInvestor.WebApi.dll"]
+ENTRYPOINT ["dotnet", "Mamkin.In.WebApi.dll"]
