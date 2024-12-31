@@ -1,9 +1,7 @@
-using Bybit.Net;
 using Bybit.Net.Clients;
 using Bybit.Net.Enums;
 using Bybit.Net.Objects.Models.V5;
 using Mamkin.In.Infrastructure.Options;
-using Mamkin.In.WebApi.Options;
 using CryptoExchange.Net.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -24,7 +22,7 @@ public class DashboardController : ControllerBase
             httpClient: httpClientFactory.CreateClient("bybit_client"),
             optionsDelegate: options =>
             {
-                options.Environment = BybitEnvironment.Testnet;
+                // options.Environment = BybitEnvironment.Testnet;
                 options.ApiCredentials = new ApiCredentials(bybitSettings.Value.ApiKey, bybitSettings.Value.ApiSecret);
             },
             loggerFactory: null);
